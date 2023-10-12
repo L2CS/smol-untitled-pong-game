@@ -22,6 +22,7 @@ struct Entity
     Vector2 outputDims;
     Vector2 hitboxDims;
     Vector2 position;
+    float rotation;
     EntityType type;
     bool destroyed;
 

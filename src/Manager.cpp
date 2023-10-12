@@ -3,11 +3,14 @@
 #include <algorithm>
 #include <chrono>
 
-Manager::Manager(int _screenWidth, int _screenHeight, float _levelRadius)
+Manager::Manager(int _screenWidth, int _screenHeight, float _levelRadius, float _levelOffset, float _paddleBoundaryWidth)
 {
     screenWidth = _screenWidth;
     screenHeight = _screenHeight;
     levelRadius = _levelRadius;
+    levelOffset = _levelOffset;
+    paddleBoundaryWidth = _paddleBoundaryWidth;
+
     lastUpdateTime = std::chrono::system_clock::now();
     lastDrawTime = std::chrono::system_clock::now();
 }
