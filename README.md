@@ -10,20 +10,24 @@ If you have cloned it non-recursively:
 git submodule update --init
 ```
 
-# Building and running
+## Preview
+![preview](./assets/preview.gif)
 
-## Linux, Mac OS, MSYS (Windows)
+
+## Building and running
+
+### Linux, Mac OS, MSYS (Windows)
 
 ```sh
 ./build.sh
 ```
 
-## Windows - Visual Studio
+### Windows - Visual Studio
 
 ```bat
 .\build.bat
 ```
 
-# Contributing
+## Contributing
 
 See style guide [here](./docs/STYLEGUIDE.md)
