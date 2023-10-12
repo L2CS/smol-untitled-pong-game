@@ -1,8 +1,13 @@
-if cmake -S . -B build; then
-	cmake --build build
-	if [[ "$OSTYPE" == "darwin"* ]]; then
-	  ./build/pong
-	elif [[ "$OSTYPE" == "msys" ]]; then
-	  ./build/pong.exe
-	fi
-fi
+#!/bin/sh
+
+set -e
+
+if [ "$1" = "release" ]; then
+    cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+else
+    cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+fi;
+
+cmake --build build
+
+./build/pong

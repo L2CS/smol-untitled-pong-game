@@ -3,6 +3,7 @@ project(pong)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Define the installation directory
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)
