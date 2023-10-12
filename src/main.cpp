@@ -34,8 +34,8 @@ int main()
         (Vector2){ (float)screenWidth / 2, (float)(screenHeight / 1.5) },
         (Vector2){ 50.0f, 16.0f },
         (Vector2){ 25.0f, 8.0f },
-        0.5f,
-        0.1f,
+        0.25f,
+        0.05f,
         0.0001f,
         9.8f,
         1.0f);
