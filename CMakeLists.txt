@@ -9,11 +9,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)
 
 # Add your libraries and include directories
-add_subdirectory(include/raylib)
+add_subdirectory(thirdparty/raylib)
 
 include_directories(
-    include
-    include/raylib/src
+    thirdparty
+    thirdparty/raylib/src
     src
 )
 
@@ -25,8 +25,8 @@ add_library(${PROJECT_NAME_LIB} STATIC ${SRCS})
 add_executable(${PROJECT_NAME} src/main.cpp)
 
 target_include_directories(${PROJECT_NAME_LIB} PRIVATE
-    include
-    include/raylib/src
+    thirdparty
+    thirdparty/raylib/src
 )
 
 target_link_libraries(${PROJECT_NAME}
