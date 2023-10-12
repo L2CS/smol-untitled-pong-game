@@ -7,8 +7,7 @@ struct Manager; // Forward declaration of Manager
 
 // TODO: add CheckCollisionPointPoly instead of using a rectangle for collision detection
 
-struct Player : Entity
-{
+struct Player : Entity {
     // player sprite
     Texture2D spriteSheet;
     // texture dimensions of player sprite
