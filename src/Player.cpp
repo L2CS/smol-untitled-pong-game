@@ -4,8 +4,9 @@
 
 #define _USE_MATH_DEFINES
 #include <cmath>
+#include <algorithm>
 
-Player::Player(Texture2D _spriteSheet, Vector2 _src, Vector2 _textureDims, Vector2 _position, Vector2 _outputDims, Vector2 _hitboxDims, float _maxVelocity, float _force, float _frictionCoeff, float _normal, float _hp)
+Player::Player(Texture2D _spriteSheet, Vector2 _src, Vector2 _textureDims, Vector2 _position, Vector2 _outputDims, Vector2 _hitboxDims, float _maxVelocity, float _force, float _frictionCoeff, float _normal, float _hp, Keybinds _binds)
     : Entity(_position, _outputDims, _hitboxDims, EntityType::PLAYER)
 {
     spriteSheet = _spriteSheet;
@@ -20,6 +21,7 @@ Player::Player(Texture2D _spriteSheet, Vector2 _src, Vector2 _textureDims, Vecto
 
     src = _src;
     hp = _hp;
+    binds = _binds;
 }
 
 //------------------------------------------------------------------------------------
@@ -40,8 +42,8 @@ void Player::update(Manager* _manager, int _screenWidth, int _screenHeight, floa
 {
     Vector2 oldShipPosition = position;
 
-    bool engineOn = IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D) || IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A) ||
-                    IsKeyDown(KEY_UP) || IsKeyDown(KEY_W) || IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_S);
+    bool engineOn = std::any_of(binds.LEFT.begin(), binds.LEFT.end(), [](int v) { return IsKeyDown(v); })
+        || std::any_of(binds.RIGHT.begin(), binds.RIGHT.end(), [](int v) { return IsKeyDown(v); });
 
     Vector2 resultantVelocity = currentVelocity;
 
@@ -49,9 +51,9 @@ void Player::update(Manager* _manager, int _screenWidth, int _screenHeight, floa
 
     float resultantForce = engineForce - (frictionCoeff * normal);
 
-    if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D))
+    if (std::any_of(binds.RIGHT.begin(), binds.RIGHT.end(), [](int v) { return IsKeyDown(v); }))
         resultantVelocity.x += ((float)resultantForce * dt);
-    if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A))
+    if (std::any_of(binds.LEFT.begin(), binds.LEFT.end(), [](int v) { return IsKeyDown(v); }))
         resultantVelocity.x -= ((float)resultantForce * dt);
 
     if (!engineOn) {
