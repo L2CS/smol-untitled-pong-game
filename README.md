@@ -14,16 +14,16 @@ git submodule update --init
 
 ## Linux, Mac OS, MSYS (Windows)
 
-```
+```sh
 ./build.sh
 ```
 
 ## Windows - Visual Studio
 
-```
+```bat
 .\build.bat
 ```
 
 # Contributing
 
-See style guide [here](./STYLEGUIDE.md)
+See style guide [here](./docs/STYLEGUIDE.md)
