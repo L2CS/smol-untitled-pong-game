@@ -19,7 +19,7 @@ void Entity::update()
 
 void Entity::draw()
 {
-    Rectangle destRec = {position.x, position.y, outputDims.x, outputDims.y};
-    Vector2 origin = {(float)outputDims.x / 2, (float)outputDims.y / 2};
+    Rectangle destRec = { position.x, position.y, outputDims.x, outputDims.y };
+    Vector2 origin = { (float)outputDims.x / 2, (float)outputDims.y / 2 };
     DrawRectanglePro(destRec, origin, 0.0, PINK);
 }

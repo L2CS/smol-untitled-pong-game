@@ -32,18 +32,15 @@ void Manager::update()
     float dt = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
     lastUpdateTime = now;
 
-    for (auto entry : entities)
-    {
+    for (auto entry : entities) {
         auto entity = entry.second;
 
         // TODO: implement updating for player type
-        if (entity->type == EntityType::PLAYER)
-        {
+        if (entity->type == EntityType::PLAYER) {
             Player* player = static_cast<Player*>(entity);
             player->update(this, screenWidth, screenHeight, dt);
         }
-        else
-        {
+        else {
             entity->update();
         }
     }
@@ -51,25 +48,23 @@ void Manager::update()
 
 void Manager::draw()
 {
-    DrawCircleLines(screenWidth/2, screenHeight/2, levelRadius, WHITE);
+    DrawCircleLines(screenWidth / 2, screenHeight / 2, levelRadius, WHITE);
 
     auto now = std::chrono::system_clock::now();
     auto elapsed = now - lastDrawTime;
     float dt = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
     lastDrawTime = now;
 
-    for (auto entry : entities)
-    {
+    for (auto entry : entities) {
         auto entity = entry.second;
         // TODO: implement drawing for player type
-        if (entity->type == EntityType::PLAYER)
-        {
+        if (entity->type == EntityType::PLAYER) {
             Player* player = static_cast<Player*>(entity);
             player->draw();
         }
-//         else
-//         {
-//             entity->draw();
-//         }
+        //         else
+        //         {
+        //             entity->draw();
+        //         }
     }
 }

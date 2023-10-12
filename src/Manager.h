@@ -1,15 +1,13 @@
 #ifndef _MANAGER
 #define _MANAGER
 
-
 #include "Player.h"
 // #include "Powerup.h"
 
 #include <chrono>
 #include <vector>
 
-struct Manager
-{
+struct Manager {
     // screen dims
     int screenWidth;
     int screenHeight;

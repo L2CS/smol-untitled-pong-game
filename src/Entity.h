@@ -6,8 +6,7 @@
 #include <unordered_map>
 #include <vector>
 
-enum EntityType
-{
+enum EntityType {
     PLAYER,
     BALL,
     POWERUP
@@ -15,8 +14,7 @@ enum EntityType
 
 using EntityId = unsigned int;
 
-struct Entity
-{
+struct Entity {
     static EntityId newId;
     EntityId id;
     Vector2 outputDims;
