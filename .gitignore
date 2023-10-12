@@ -35,3 +35,6 @@
 *.exe
 *.out
 *.app
+
+# vim cringe
+*.swp
