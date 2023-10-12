@@ -12,7 +12,6 @@ struct Keybinds {
     std::vector<int> RIGHT;
 };
 
-
 // TODO: add CheckCollisionPointPoly instead of using a rectangle for collision detection
 
 struct Player : Entity {

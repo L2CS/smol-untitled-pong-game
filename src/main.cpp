@@ -9,7 +9,7 @@ int main()
     int screenWidth = 1280;
     int screenHeight = 720;
     float levelRadius = 300.0;
-    float offset = 20.0f;
+    float offset = 40.0f;
     float boundaryWidth = 300.0f;
 
     InitWindow(screenWidth, screenHeight, "smol-pong");
@@ -28,13 +28,13 @@ int main()
     Texture2D playerSprite = LoadTexture(playerSpriteLocation);
 
     // TODO: let the user set binds in the game menu :)
-    std::vector<int> left{KEY_LEFT};
-    std::vector<int> right{KEY_RIGHT};
-    Keybinds p1Binds = {left, right};
+    std::vector<int> left{ KEY_LEFT };
+    std::vector<int> right{ KEY_RIGHT };
+    Keybinds p1Binds = { left, right };
 
-    std::vector<int> left2{KEY_A};
-    std::vector<int> right2{KEY_D};
-    Keybinds p2Binds = {left2, right2};
+    std::vector<int> left2{ KEY_A };
+    std::vector<int> right2{ KEY_D };
+    Keybinds p2Binds = { left2, right2 };
 
     Player* p1 = new Player(
         playerSprite,
@@ -50,22 +50,22 @@ int main()
         1.0f,
         p1Binds);
 
-    // Player* p2 = new Player(
-    //     playerSprite,
-    //     (Vector2){ 3.0f, 11.0f },
-    //     (Vector2){ 32.0f, 32.0f },
-    //     (Vector2){ (float)screenWidth / 2, (float)(screenHeight / 1.5) },
-    //     (Vector2){ 50.0f, 16.0f },
-    //     (Vector2){ 25.0f, 8.0f },
-    //     0.25f,
-    //     0.05f,
-    //     0.0001f,
-    //     9.8f,
-    //     1.0f,
-    //     p2Binds);
+    Player* p2 = new Player(
+        playerSprite,
+        (Vector2){ 3.0f, 11.0f },
+        (Vector2){ 32.0f, 32.0f },
+        (Vector2){ (float)screenWidth / 2, (float)(screenHeight / 4) },
+        (Vector2){ 50.0f, 16.0f },
+        (Vector2){ 25.0f, 8.0f },
+        0.25f,
+        0.05f,
+        0.0001f,
+        9.8f,
+        1.0f,
+        p2Binds);
 
     mgr->addEntity(p1);
-    // mgr->addEntity(p2);
+    mgr->addEntity(p2);
 
     SetTargetFPS(60);
 

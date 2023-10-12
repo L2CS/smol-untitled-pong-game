@@ -3,8 +3,8 @@
 #include "raymath.h"
 
 #define _USE_MATH_DEFINES
-#include <cmath>
 #include <algorithm>
+#include <cmath>
 
 Player::Player(Texture2D _spriteSheet, Vector2 _src, Vector2 _textureDims, Vector2 _position, Vector2 _outputDims, Vector2 _hitboxDims, float _maxVelocity, float _force, float _frictionCoeff, float _normal, float _hp, Keybinds _binds)
     : Entity(_position, _outputDims, _hitboxDims, EntityType::PLAYER)
@@ -42,8 +42,7 @@ void Player::update(Manager* _manager, int _screenWidth, int _screenHeight, floa
 {
     Vector2 oldShipPosition = position;
 
-    bool engineOn = std::any_of(binds.LEFT.begin(), binds.LEFT.end(), [](int v) { return IsKeyDown(v); })
-        || std::any_of(binds.RIGHT.begin(), binds.RIGHT.end(), [](int v) { return IsKeyDown(v); });
+    bool engineOn = std::any_of(binds.LEFT.begin(), binds.LEFT.end(), [](int v) { return IsKeyDown(v); }) || std::any_of(binds.RIGHT.begin(), binds.RIGHT.end(), [](int v) { return IsKeyDown(v); });
 
     Vector2 resultantVelocity = currentVelocity;
 
@@ -106,17 +105,17 @@ void Player::update(Manager* _manager, int _screenWidth, int _screenHeight, floa
             rotation += 180.0f;
         }
     }
-    //     else
-    //     {
-    //
-    //         position.y = - std::sqrt
-    //         (
-    //             std::powf(_manager->levelRadius - _manager->levelOffset, 2)
-    //             - std::powf(position.x - (float)(_manager->screenWidth/2), 2)
-    //         ) + (float)(_manager->screenHeight/2);
-    //
-    //         // rotation = -((180/M_PI) * std::atan(-_y/_x)) - 90.f;
-    //     }
+    else {
+        position.y = -std::sqrt(
+                         std::pow((double)(_manager->levelRadius - _manager->levelOffset), 2) - std::pow((double)position.x - (double)(_manager->screenWidth / 2), 2)) +
+                     (float)(_manager->screenHeight / 2);
+
+        rotation = -((180 / M_PI) * std::atan(-_y / _x)) + 90.f;
+
+        if (position.x >= _manager->screenWidth / 2) {
+            rotation += 180.0f;
+        }
+    }
 
     // TODO: ADD GLOBAL HITBOX VAR
     // if (IsKeyDown(KEY_H)) showHitboxes = !showHitboxes;
