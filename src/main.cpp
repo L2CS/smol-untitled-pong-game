@@ -64,8 +64,15 @@ int main()
         1.0f,
         p2Binds);
 
+    Ball* b = new Ball(
+        (Vector2){ (float)screenWidth / 2, (float)(screenHeight / 2) },
+        (Vector2){ 5.0, 5.0 },
+        (Vector2){ 5.0, 5.0 },
+        0.1f);
+        
     mgr->addEntity(p1);
     mgr->addEntity(p2);
+    mgr->addEntity(b);
 
     SetTargetFPS(60);
 

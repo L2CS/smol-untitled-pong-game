@@ -37,7 +37,7 @@ struct Player : Entity {
     Keybinds binds;
 
     Player(Texture2D _spriteSheet, Vector2 _src, Vector2 _textureDims, Vector2 _position, Vector2 _outputDims, Vector2 _hitboxDims, float _maxVelocity, float _force, float _frictionCoeff, float _normal, float _hp, Keybinds _binds);
-    bool outOfBounds(Manager* _manager, Vector2 entity, int screenWidth, int screenHeight);
+    bool outOfBounds(Manager* _manager, Vector2 _position);
     void update(Manager* _manager, int _screenWidth, int _screenHeight, float dt);
     void draw();
 };

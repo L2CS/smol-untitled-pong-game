@@ -1,7 +1,9 @@
 #ifndef _MANAGER
 #define _MANAGER
 
+#include "helpers.h"
 #include "Player.h"
+#include "Ball.h"
 // #include "Powerup.h"
 
 #include <chrono>
@@ -24,6 +26,8 @@ struct Manager {
     std::chrono::system_clock::time_point lastDrawTime;
     // map of entities
     EntityMap entities;
+    // level boundary points
+    float* boundaryPoints;
     // TODO: write handlers for adding powerups
     // std::vector<Powerup*> powerupsToAdd;
 

@@ -27,9 +27,9 @@ Player::Player(Texture2D _spriteSheet, Vector2 _src, Vector2 _textureDims, Vecto
 //------------------------------------------------------------------------------------
 // Out-Of-Bounds check
 //------------------------------------------------------------------------------------
-bool Player::outOfBounds(Manager* _manager, Vector2 entity, int screenWidth, int screenHeight)
+bool Player::outOfBounds(Manager* _manager, Vector2 _position)
 {
-    if (entity.x <= (float)(_manager->screenWidth / 2) - _manager->paddleBoundaryWidth / 2 || entity.x >= (float)(_manager->screenWidth / 2) + _manager->paddleBoundaryWidth / 2) {
+    if (_position.x <= (float)(_manager->screenWidth / 2) - _manager->paddleBoundaryWidth / 2 || _position.x >= (float)(_manager->screenWidth / 2) + _manager->paddleBoundaryWidth / 2) {
         return true;
     }
     return false;
@@ -121,7 +121,7 @@ void Player::update(Manager* _manager, int _screenWidth, int _screenHeight, floa
     // if (IsKeyDown(KEY_H)) showHitboxes = !showHitboxes;
 
     if (outOfBounds(_manager, position, _screenWidth, _screenHeight)) {
-        position = oldShipPosition;
+        position = oldPosition;
     }
 
     currentVelocity = resultantVelocity;

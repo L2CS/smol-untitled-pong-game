@@ -13,6 +13,9 @@ Manager::Manager(int _screenWidth, int _screenHeight, float _levelRadius, float 
 
     lastUpdateTime = std::chrono::system_clock::now();
     lastDrawTime = std::chrono::system_clock::now();
+
+    Vector2 center = (Vector2){ (float)(_screenWidth/2), (float)(_screenHeight/2) };
+    points = generateCirclePoints(100, center, _levelRadius);
 }
 
 void Manager::addEntity(Entity* _entity)
@@ -40,6 +43,10 @@ void Manager::update()
             Player* player = static_cast<Player*>(entity);
             player->update(this, screenWidth, screenHeight, dt);
         }
+        else if (entity->type == EntityType::BALL) {
+            Ball* ball = static_cast<Ball*>(entity);
+            ball->update(this, screenWidth, screenHeight, dt);
+        }
         else {
             entity->update();
         }
@@ -62,9 +69,9 @@ void Manager::draw()
             Player* player = static_cast<Player*>(entity);
             player->draw();
         }
-        //         else
-        //         {
-        //             entity->draw();
-        //         }
+        else if (entity->type == EntityType::BALL) {
+            Ball* ball = static_cast<Ball*>(entity);
+            ball->draw();
+        }
     }
 }
