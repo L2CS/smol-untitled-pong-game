@@ -69,7 +69,7 @@ int main()
         (Vector2){ 5.0, 5.0 },
         (Vector2){ 5.0, 5.0 },
         0.1f);
-        
+
     mgr->addEntity(p1);
     mgr->addEntity(p2);
     mgr->addEntity(b);

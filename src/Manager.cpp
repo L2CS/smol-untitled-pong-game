@@ -18,15 +18,14 @@ Manager::Manager(int _screenWidth, int _screenHeight, float _levelRadius, float 
     numPoints = 100;
     numGoalPoints = 20;
 
-    Vector2 center = (Vector2){ (float)(_screenWidth/2), (float)(_screenHeight/2) };
+    Vector2 center = (Vector2){ (float)(_screenWidth / 2), (float)(_screenHeight / 2) };
     boundaryPoints = generateCirclePoints(numPoints, center, _levelRadius);
 
-    Vector2 offset = (Vector2){ (float)(_paddleBoundaryWidth/2), 0 };
+    Vector2 offset = (Vector2){ (float)(_paddleBoundaryWidth / 2), 0 };
     Vector2 start = Vector2Subtract(center, offset);
     Vector2 end = Vector2Add(center, offset);
-    goalSections = generateGoalPoints(this, numGoalPoints, start.x, end.x, _levelRadius-5);
+    goalSections = generateGoalPoints(this, numGoalPoints, start.x, end.x, _levelRadius - 5);
     std::cout << start.x << "," << end.x << std::endl;
-
 }
 
 void Manager::addEntity(Entity* _entity)
@@ -41,6 +40,16 @@ void Manager::deleteEntity(EntityId _id)
 
 void Manager::update()
 {
+    //  remove entities that need to be removed
+    for (auto it = entities.begin(); it != entities.end();) {
+        auto e = it->second;
+        if (e->destroyed) {
+            entities.erase(it++);
+            continue;
+        }
+        it++;
+    }
+
     auto now = std::chrono::system_clock::now();
     auto elapsed = now - lastUpdateTime;
     float dt = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();

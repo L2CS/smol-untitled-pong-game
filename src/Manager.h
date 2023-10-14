@@ -1,9 +1,9 @@
 #ifndef _MANAGER
 #define _MANAGER
 
+#include "Ball.h"
 #include "helpers.h"
 #include "Player.h"
-#include "Ball.h"
 
 #include "raymath.h"
 

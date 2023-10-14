@@ -1,6 +1,7 @@
 #ifndef _HELPERS
 #define _HELPERS
 #include "raylib.h"
+#include "raymath.h"
 
 #include <cmath>
 
@@ -10,4 +11,3 @@ extern Vector2* generateCirclePoints(int numPoints, Vector2 center, double radiu
 extern Vector2** generateGoalPoints(Manager* _manager, int numPointsEach, float start, float end, double radius);
 
 #endif // _HELPERS
-
