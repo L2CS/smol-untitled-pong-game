@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <iostream>
 
 Manager::Manager(int _screenWidth, int _screenHeight, float _levelRadius, float _levelOffset, float _paddleBoundaryWidth)
 {
@@ -14,8 +15,18 @@ Manager::Manager(int _screenWidth, int _screenHeight, float _levelRadius, float 
     lastUpdateTime = std::chrono::system_clock::now();
     lastDrawTime = std::chrono::system_clock::now();
 
+    numPoints = 100;
+    numGoalPoints = 20;
+
     Vector2 center = (Vector2){ (float)(_screenWidth/2), (float)(_screenHeight/2) };
-    points = generateCirclePoints(100, center, _levelRadius);
+    boundaryPoints = generateCirclePoints(numPoints, center, _levelRadius);
+
+    Vector2 offset = (Vector2){ (float)(_paddleBoundaryWidth/2), 0 };
+    Vector2 start = Vector2Subtract(center, offset);
+    Vector2 end = Vector2Add(center, offset);
+    goalSections = generateGoalPoints(this, numGoalPoints, start.x, end.x, _levelRadius-5);
+    std::cout << start.x << "," << end.x << std::endl;
+
 }
 
 void Manager::addEntity(Entity* _entity)
@@ -56,6 +67,9 @@ void Manager::update()
 void Manager::draw()
 {
     DrawCircleLines(screenWidth / 2, screenHeight / 2, levelRadius, WHITE);
+    // draw goals on each side
+    DrawLineStrip(goalSections[0], 20, RED);
+    DrawLineStrip(goalSections[1], 20, BLUE);
 
     auto now = std::chrono::system_clock::now();
     auto elapsed = now - lastDrawTime;

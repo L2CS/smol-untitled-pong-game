@@ -4,7 +4,8 @@
 #include "helpers.h"
 #include "Player.h"
 #include "Ball.h"
-// #include "Powerup.h"
+
+#include "raymath.h"
 
 #include <chrono>
 #include <vector>
@@ -27,7 +28,11 @@ struct Manager {
     // map of entities
     EntityMap entities;
     // level boundary points
-    float* boundaryPoints;
+    Vector2* boundaryPoints;
+    int numPoints;
+    // goal points sections
+    Vector2** goalSections;
+    int numGoalPoints;
     // TODO: write handlers for adding powerups
     // std::vector<Powerup*> powerupsToAdd;
 

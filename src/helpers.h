@@ -4,18 +4,10 @@
 
 #include <cmath>
 
-Vector2* generateCirclePoints(int numPoints, Vector2 center, double radius) {
-    Vector2* points = new Vector2[numPoints];
+struct Manager;
 
-    for (int i = 0; i < numPoints; ++i) {
-        double angle = 2 * M_PI * i / numPoints;
-        points[i].x = (float)(center.x + radius * cos(angle));
-        points[i].y = (float)(center.y + radius * sin(angle));
-    }
-
-    return points;
-}
-
+extern Vector2* generateCirclePoints(int numPoints, Vector2 center, double radius);
+extern Vector2** generateGoalPoints(Manager* _manager, int numPointsEach, float start, float end, double radius);
 
 #endif // _HELPERS
 

@@ -40,7 +40,7 @@ bool Player::outOfBounds(Manager* _manager, Vector2 _position)
 //------------------------------------------------------------------------------------
 void Player::update(Manager* _manager, int _screenWidth, int _screenHeight, float dt)
 {
-    Vector2 oldShipPosition = position;
+    Vector2 oldPosition = position;
 
     bool engineOn = std::any_of(binds.LEFT.begin(), binds.LEFT.end(), [](int v) { return IsKeyDown(v); }) || std::any_of(binds.RIGHT.begin(), binds.RIGHT.end(), [](int v) { return IsKeyDown(v); });
 
@@ -120,7 +120,7 @@ void Player::update(Manager* _manager, int _screenWidth, int _screenHeight, floa
     // TODO: ADD GLOBAL HITBOX VAR
     // if (IsKeyDown(KEY_H)) showHitboxes = !showHitboxes;
 
-    if (outOfBounds(_manager, position, _screenWidth, _screenHeight)) {
+    if (outOfBounds(_manager, position)) {
         position = oldPosition;
     }
 

@@ -92,6 +92,7 @@ int main()
         BeginDrawing();
 
         mgr->draw();
+        DrawFPS(10, 10);
 
         ClearBackground(BLACK);
 
