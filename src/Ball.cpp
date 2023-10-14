@@ -57,21 +57,37 @@ bool Ball::hitGoal(Manager* _manager, Vector2 _position)
 //------------------------------------------------------------------------------------
 bool Ball::outOfBounds(Manager* _manager)
 {
-    std::cout << currentVelocity.x << ", " << currentVelocity.y << std::endl;
-    // TODO: is there a faster way to do this???
-    for (int i = 0; i < _manager->numPoints - 1; i++) {
-        Vector2 p1 = _manager->boundaryPoints[i];
-        Vector2 p2 = _manager->boundaryPoints[i + 1];
+    // std::cout << currentVelocity.x << ", " << currentVelocity.y << std::endl;
+    // // TODO: is there a faster way to do this???
+    // for (int i = 0; i < _manager->numPoints - 1; i++) {
+    //     Vector2 p1 = _manager->boundaryPoints[i];
+    //     Vector2 p2 = _manager->boundaryPoints[i + 1];
 
-        if (CheckCollisionPointLine(position, p1, p2, 3.0f)) {
-            Vector2 p = Vector2Normalize(Vector2Subtract(p2, p1));
-            Vector2 n = Vector2Rotate(p, 90.0f);
-            currentVelocity = Vector2Reflect(currentVelocity, n);
-            return true;
-        }
+    //     // if (CheckCollisionPointLine(position, p1, p2, 3.0f)) {
+    //     //     Vector2 p = Vector2Normalize(Vector2Subtract(p2, p1));
+    //     //     Vector2 n = Vector2Rotate(p, 90.0f);
+    //     //     currentVelocity = Vector2Reflect(currentVelocity, n);
+    //     //     return true;
+    //     // }
+    // }
+    if (CheckCollisionPointCircle({ position.x, position.y }, { 1280 / 2, 720 / 2 }, 300.0f)) {
+        return false;
+    }
+    else {
+        Vector2 circleCenter = { 1280 / 2, 720 / 2 };
+        double circleRadius = 300.0;
+
+        // Calculate the vector from the ball's position to the circle's center
+        Vector2 toCenter = Vector2Subtract(circleCenter, position);
+
+        // Calculate the normalized vector representing the inside of the circle
+        Vector2 insideNormal = Vector2Normalize(toCenter);
+
+        // Calculate the reflection of the current velocity inside the circle
+        currentVelocity = Vector2Reflect(currentVelocity, insideNormal);
     }
 
-    return false;
+    return true;
 }
 
 //------------------------------------------------------------------------------------
