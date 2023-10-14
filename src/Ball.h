@@ -18,6 +18,7 @@ struct Ball : Entity {
     Ball(Vector2 _position, Vector2 _outputDims, Vector2 _hitboxDims, float _maxVelocity);
     bool hitGoal(Manager* _manager, Vector2 _position);
     bool outOfBounds(Manager* _manager);
+    void handleCollisions(Manager* _manager);
     void update(Manager* _manager, int _screenWidth, int _screenHeight, float dt);
     void draw();
 };

@@ -38,6 +38,11 @@ void Manager::deleteEntity(EntityId _id)
     entities.erase(_id);
 }
 
+void Manager::addPlayer(Player* player)
+{
+    players.push_back(player);
+}
+
 void Manager::update()
 {
     //  remove entities that need to be removed

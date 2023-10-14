@@ -74,6 +74,9 @@ int main()
     mgr->addEntity(p2);
     mgr->addEntity(b);
 
+    mgr->addPlayer(p1);
+    mgr->addPlayer(p2);
+
     SetTargetFPS(60);
 
     // Main game loop here
@@ -85,34 +88,6 @@ int main()
         //----------------------------------------------------------------------------------
         mgr->update();
 
-        if (CheckCollisionPointCircle({ b->position.x, b->position.y }, { p1->position.x, p1->position.y }, 25.0f)) {
-            // Calculate the collision point relative to the center of the circle
-            float relativeX = b->position.x - p1->position.x;
-            float relativeY = b->position.y - p1->position.y;
-
-            // Calculate the angle of collision
-            float collisionAngle = atan2f(relativeY, relativeX);
-
-            // Calculate the new velocity based on the angle
-            float speed = Vector2Length(b->currentVelocity);
-            b->currentVelocity.x = cosf(collisionAngle) * speed;
-            b->currentVelocity.y = sinf(collisionAngle) * speed;
-        }
-
-        if (CheckCollisionPointCircle({ b->position.x, b->position.y }, { p2->position.x, p2->position.y }, 25.0f)) {
-            // Calculate the collision point relative to the center of the circle
-            float relativeX = b->position.x - p2->position.x;
-            float relativeY = b->position.y - p2->position.y;
-
-            // Calculate the angle of collision
-            float collisionAngle = atan2f(relativeY, relativeX);
-
-            // Calculate the new velocity based on the angle
-            float speed = Vector2Length(b->currentVelocity);
-            b->currentVelocity.x = cosf(collisionAngle) * speed;
-            b->currentVelocity.y = sinf(collisionAngle) * speed;
-        }
-
         //----------------------------------------------------------------------------------
 
         // Draw
@@ -120,9 +95,11 @@ int main()
         BeginDrawing();
 
         mgr->draw();
-        // Draw collision circles
-        DrawCircle(p1->position.x, p1->position.y, p1->outputDims.x / 2, RED);  // Change RED to your desired color
-        DrawCircle(p2->position.x, p2->position.y, p2->outputDims.x / 2, BLUE); // Change BLUE to your desired color
+
+        // Draw collision circles - Remove when done implementing poly collisions
+        DrawCircle(p1->position.x, p1->position.y, p1->outputDims.x / 2, BLUE);
+        DrawCircle(p2->position.x, p2->position.y, p2->outputDims.x / 2, RED);
+
         DrawFPS(10, 10);
 
         ClearBackground(BLACK);

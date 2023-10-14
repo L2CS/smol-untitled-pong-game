@@ -33,6 +33,7 @@ struct Manager {
     // goal points sections
     Vector2** goalSections;
     int numGoalPoints;
+    std::vector<Player*> players;
     // TODO: write handlers for adding powerups
     // std::vector<Powerup*> powerupsToAdd;
 
@@ -41,6 +42,7 @@ struct Manager {
     // member functions for managing entities
     void addEntity(Entity* _entity);
     void deleteEntity(EntityId _id);
+    void addPlayer(Player* player);
     void update();
     void draw();
 };

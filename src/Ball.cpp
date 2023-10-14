@@ -57,30 +57,17 @@ bool Ball::hitGoal(Manager* _manager, Vector2 _position)
 //------------------------------------------------------------------------------------
 bool Ball::outOfBounds(Manager* _manager)
 {
-    // std::cout << currentVelocity.x << ", " << currentVelocity.y << std::endl;
-    // // TODO: is there a faster way to do this???
-    // for (int i = 0; i < _manager->numPoints - 1; i++) {
-    //     Vector2 p1 = _manager->boundaryPoints[i];
-    //     Vector2 p2 = _manager->boundaryPoints[i + 1];
-
-    //     // if (CheckCollisionPointLine(position, p1, p2, 3.0f)) {
-    //     //     Vector2 p = Vector2Normalize(Vector2Subtract(p2, p1));
-    //     //     Vector2 n = Vector2Rotate(p, 90.0f);
-    //     //     currentVelocity = Vector2Reflect(currentVelocity, n);
-    //     //     return true;
-    //     // }
-    // }
-    if (CheckCollisionPointCircle({ position.x, position.y }, { 1280 / 2, 720 / 2 }, 300.0f)) {
+    if (CheckCollisionPointCircle({ position.x, position.y }, { float(_manager->screenWidth / 2), float(_manager->screenHeight / 2) }, 300.0f)) {
         return false;
     }
     else {
-        Vector2 circleCenter = { 1280 / 2, 720 / 2 };
+        Vector2 circleCenter = { float(_manager->screenWidth / 2), float(_manager->screenHeight / 2) };
         double circleRadius = 300.0;
 
         // Calculate the vector from the ball's position to the circle's center
         Vector2 toCenter = Vector2Subtract(circleCenter, position);
 
-        // Calculate the normalized vector representing the inside of the circle
+        // Calculate the normalised vector representing the inside of the circle
         Vector2 insideNormal = Vector2Normalize(toCenter);
 
         // Calculate the reflection of the current velocity inside the circle
@@ -111,8 +98,32 @@ void Ball::update(Manager* _manager, int _screenWidth, int _screenHeight, float 
 
     currentVelocity = resultantVelocity;
 
+    // Call handleCollisions for the ball to handle collisions
+    handleCollisions(_manager);
+
     // TODO: ADD GLOBAL HITBOX VAR
     // if (IsKeyDown(KEY_H)) showHitboxes = !showHitboxes;
+}
+
+void Ball::handleCollisions(Manager* _manager)
+{
+    // Iterate through players and check collisions
+    for (Player* player : _manager->players) {
+        // TODO: Replace with poly collisions using CheckCollisionPointPoly()
+        if (CheckCollisionPointCircle({ position.x, position.y }, { player->position.x, player->position.y }, 25.0f)) {
+            // Calculate the collision point relative to the center of the circle
+            float relativeX = position.x - player->position.x;
+            float relativeY = position.y - player->position.y;
+
+            // Calculate the angle of collision
+            float collisionAngle = atan2f(relativeY, relativeX);
+
+            // Calculate the new velocity based on the angle
+            float speed = Vector2Length(currentVelocity);
+            currentVelocity.x = cosf(collisionAngle) * speed;
+            currentVelocity.y = sinf(collisionAngle) * speed;
+        }
+    }
 }
 
 void Ball::draw()
