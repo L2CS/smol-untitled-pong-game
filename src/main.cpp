@@ -61,8 +61,7 @@ int main()
         accumulatedTime += frameTime;
 
         // Update as many times as necessary to catch up with the target frame rate
-        while (accumulatedTime >= targetFrameTime)
-        {
+        while (accumulatedTime >= targetFrameTime) {
             // Update
             //------------------------------------------------------------------------------
             mgr->update();
@@ -81,7 +80,7 @@ int main()
 
         EndDrawing();
     }
-    
+
     // close window when done
     CloseWindow();
 
