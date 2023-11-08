@@ -3,9 +3,10 @@
 #include "raymath.h"
 
 #define _USE_MATH_DEFINES
+#include <algorithm>
 #include <cmath>
 
-Player::Player(Texture2D _spriteSheet, Vector2 _src, Vector2 _textureDims, Vector2 _position, Vector2 _outputDims, Vector2 _hitboxDims, float _maxVelocity, float _force, float _frictionCoeff, float _normal, float _hp)
+Player::Player(Texture2D _spriteSheet, Vector2 _src, Vector2 _textureDims, Vector2 _position, Vector2 _outputDims, Vector2 _hitboxDims, float _maxVelocity, float _force, float _frictionCoeff, float _normal, float _hp, Keybinds _binds)
     : Entity(_position, _outputDims, _hitboxDims, EntityType::PLAYER)
 {
     spriteSheet = _spriteSheet;
@@ -20,28 +21,28 @@ Player::Player(Texture2D _spriteSheet, Vector2 _src, Vector2 _textureDims, Vecto
 
     src = _src;
     hp = _hp;
+    binds = _binds;
 }
 
-//------------------------------------------------------------------------------------
-// Out-Of-Bounds check
-//------------------------------------------------------------------------------------
-bool Player::outOfBounds(Manager* _manager, Vector2 entity, int screenWidth, int screenHeight)
+/**
+ * Out-of-bounds check
+ */
+bool Player::outOfBounds(Manager* _manager, Vector2 _position)
 {
-    if (entity.x <= (float)(_manager->screenWidth / 2) - _manager->paddleBoundaryWidth / 2 || entity.x >= (float)(_manager->screenWidth / 2) + _manager->paddleBoundaryWidth / 2) {
+    if (_position.x <= (float)(_manager->screenWidth / 2) - _manager->paddleBoundaryWidth / 2 || _position.x >= (float)(_manager->screenWidth / 2) + _manager->paddleBoundaryWidth / 2) {
         return true;
     }
     return false;
 }
 
-//------------------------------------------------------------------------------------
-// Update player
-//------------------------------------------------------------------------------------
+/**
+ * Update Player
+ */
 void Player::update(Manager* _manager, int _screenWidth, int _screenHeight, float dt)
 {
-    Vector2 oldShipPosition = position;
+    Vector2 oldPosition = position;
 
-    bool engineOn = IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D) || IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A) ||
-                    IsKeyDown(KEY_UP) || IsKeyDown(KEY_W) || IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_S);
+    bool engineOn = std::any_of(binds.LEFT.begin(), binds.LEFT.end(), [](int v) { return IsKeyDown(v); }) || std::any_of(binds.RIGHT.begin(), binds.RIGHT.end(), [](int v) { return IsKeyDown(v); });
 
     Vector2 resultantVelocity = currentVelocity;
 
@@ -49,9 +50,9 @@ void Player::update(Manager* _manager, int _screenWidth, int _screenHeight, floa
 
     float resultantForce = engineForce - (frictionCoeff * normal);
 
-    if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D))
+    if (std::any_of(binds.RIGHT.begin(), binds.RIGHT.end(), [](int v) { return IsKeyDown(v); }))
         resultantVelocity.x += ((float)resultantForce * dt);
-    if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A))
+    if (std::any_of(binds.LEFT.begin(), binds.LEFT.end(), [](int v) { return IsKeyDown(v); }))
         resultantVelocity.x -= ((float)resultantForce * dt);
 
     if (!engineOn) {
@@ -61,7 +62,7 @@ void Player::update(Manager* _manager, int _screenWidth, int _screenHeight, floa
         resultantVelocity.x += resultantForceVec.x * dt;
         resultantVelocity.y += resultantForceVec.y * dt;
 
-        // stop moving by friction
+        // Stop moving by friction
         if (currentVelocity.x > 0 && resultantVelocity.x <= 0) {
             resultantVelocity.x = 0;
         }
@@ -104,23 +105,23 @@ void Player::update(Manager* _manager, int _screenWidth, int _screenHeight, floa
             rotation += 180.0f;
         }
     }
-    //     else
-    //     {
-    //
-    //         position.y = - std::sqrt
-    //         (
-    //             std::powf(_manager->levelRadius - _manager->levelOffset, 2)
-    //             - std::powf(position.x - (float)(_manager->screenWidth/2), 2)
-    //         ) + (float)(_manager->screenHeight/2);
-    //
-    //         // rotation = -((180/M_PI) * std::atan(-_y/_x)) - 90.f;
-    //     }
+    else {
+        position.y = -std::sqrt(
+                         std::pow((double)(_manager->levelRadius - _manager->levelOffset), 2) - std::pow((double)position.x - (double)(_manager->screenWidth / 2), 2)) +
+                     (float)(_manager->screenHeight / 2);
+
+        rotation = -((180 / M_PI) * std::atan(-_y / _x)) + 90.f;
+
+        if (position.x >= _manager->screenWidth / 2) {
+            rotation += 180.0f;
+        }
+    }
 
     // TODO: ADD GLOBAL HITBOX VAR
     // if (IsKeyDown(KEY_H)) showHitboxes = !showHitboxes;
 
-    if (outOfBounds(_manager, position, _screenWidth, _screenHeight)) {
-        position = oldShipPosition;
+    if (outOfBounds(_manager, position)) {
+        position = oldPosition;
     }
 
     currentVelocity = resultantVelocity;

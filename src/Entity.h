@@ -1,5 +1,4 @@
-#ifndef _ENTITY
-#define _ENTITY
+#pragma once
 
 #include "raylib.h"
 #include <chrono>
@@ -30,5 +29,3 @@ struct Entity {
 };
 
 using EntityMap = std::unordered_map<EntityId, Entity*>;
-
-#endif // _ENTITY
