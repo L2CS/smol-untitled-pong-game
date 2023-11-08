@@ -77,13 +77,33 @@ int main()
     mgr->addPlayer(p1);
     mgr->addPlayer(p2);
 
-    SetTargetFPS(60);
+    // Define a target frame rate and calculate the frame time
+    const int targetFPS = 60;
+    const float targetFrameTime = 1.0f / targetFPS;
+
+    // Timing variables
+    float accumulatedTime = 0.0f;
+    double currentTime = GetTime();
 
     // Main game loop
     while (!WindowShouldClose()) // Detect window close button or ESC key
     {
-        mgr->update();
+        // Calculate elapsed time since last frame
+        double newTime = GetTime();
+        double frameTime = newTime - currentTime;
+        currentTime = newTime;
 
+        accumulatedTime += frameTime;
+
+        // Update as many times as necessary to catch up with the target frame rate
+        while (accumulatedTime >= targetFrameTime) {
+            // Update
+            mgr->update();
+
+            accumulatedTime -= targetFrameTime;
+        }
+
+        // Draw
         BeginDrawing();
         mgr->draw();
 
