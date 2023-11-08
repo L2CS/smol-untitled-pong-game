@@ -10,10 +10,11 @@
 Ball::Ball(Vector2 _position, Vector2 _outputDims, Vector2 _hitboxDims, float _maxVelocity)
     : Entity(_position, _outputDims, _hitboxDims, EntityType::BALL)
 {
-    float upDown = (float)rand() / RAND_MAX;
+    float upDown = static_cast<float>(rand()) / RAND_MAX;
 
-    currentVelocity = (Vector2){ (float)rand() / RAND_MAX, (float)rand() / RAND_MAX };
-    currentVelocity = upDown > 0.5f ? currentVelocity : (Vector2){ -currentVelocity.x, -currentVelocity.y };
+    currentVelocity = Vector2{ static_cast<float>(rand()) / RAND_MAX, static_cast<float>(rand()) / RAND_MAX };
+
+    currentVelocity = upDown > 0.5f ? currentVelocity : Vector2{ -currentVelocity.x, -currentVelocity.y };
 
     float mag = Vector2Length(currentVelocity);
     currentVelocity = Vector2Normalize(currentVelocity);
