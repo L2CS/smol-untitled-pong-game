@@ -1,5 +1,4 @@
-#ifndef _MANAGER
-#define _MANAGER
+#pragma once
 
 #include "Ball.h"
 #include "helpers.h"
@@ -46,5 +45,3 @@ struct Manager {
     void update();
     void draw();
 };
-
-#endif // _MANAGER

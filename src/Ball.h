@@ -1,5 +1,4 @@
-#ifndef _BALL
-#define _BALL
+#pragma once
 
 #include "Entity.h"
 
@@ -22,5 +21,3 @@ struct Ball : Entity {
     void update(Manager* _manager, int _screenWidth, int _screenHeight, float dt);
     void draw();
 };
-
-#endif // _BALL

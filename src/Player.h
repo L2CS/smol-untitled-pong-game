@@ -1,5 +1,4 @@
-#ifndef _PLAYER
-#define _PLAYER
+#pragma once
 
 #include "Entity.h"
 
@@ -41,5 +40,3 @@ struct Player : Entity {
     void update(Manager* _manager, int _screenWidth, int _screenHeight, float dt);
     void draw();
 };
-
-#endif // _PLAYER
