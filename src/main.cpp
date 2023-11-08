@@ -27,7 +27,7 @@ int main()
     const char* playerSpriteLocation = "./resources/textures/paddle.png";
     Texture2D playerSprite = LoadTexture(playerSpriteLocation);
 
-    // TODO: let the user set binds in the game menu :)
+    // TODO: Let the user set binds in the game menu :)
     std::vector<int> left{ KEY_LEFT };
     std::vector<int> right{ KEY_RIGHT };
     Keybinds p1Binds = { left, right };
@@ -79,21 +79,12 @@ int main()
 
     SetTargetFPS(60);
 
-    // Main game loop here
+    // Main game loop
     while (!WindowShouldClose()) // Detect window close button or ESC key
     {
-        //----------------------------------------------------------------------------------
-
-        // Update
-        //----------------------------------------------------------------------------------
         mgr->update();
 
-        //----------------------------------------------------------------------------------
-
-        // Draw
-        //----------------------------------------------------------------------------------
         BeginDrawing();
-
         mgr->draw();
 
         // Draw collision circles - Remove when done implementing poly collisions
@@ -107,7 +98,7 @@ int main()
         EndDrawing();
     }
 
-    // close window when done
+    // Close window when done
     CloseWindow();
 
     return 0;

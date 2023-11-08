@@ -24,9 +24,9 @@ Player::Player(Texture2D _spriteSheet, Vector2 _src, Vector2 _textureDims, Vecto
     binds = _binds;
 }
 
-//------------------------------------------------------------------------------------
-// Out-Of-Bounds check
-//------------------------------------------------------------------------------------
+/**
+ * Out-of-bounds check
+ */
 bool Player::outOfBounds(Manager* _manager, Vector2 _position)
 {
     if (_position.x <= (float)(_manager->screenWidth / 2) - _manager->paddleBoundaryWidth / 2 || _position.x >= (float)(_manager->screenWidth / 2) + _manager->paddleBoundaryWidth / 2) {
@@ -35,9 +35,9 @@ bool Player::outOfBounds(Manager* _manager, Vector2 _position)
     return false;
 }
 
-//------------------------------------------------------------------------------------
-// Update player
-//------------------------------------------------------------------------------------
+/**
+ * Update Player
+ */
 void Player::update(Manager* _manager, int _screenWidth, int _screenHeight, float dt)
 {
     Vector2 oldPosition = position;
@@ -62,7 +62,7 @@ void Player::update(Manager* _manager, int _screenWidth, int _screenHeight, floa
         resultantVelocity.x += resultantForceVec.x * dt;
         resultantVelocity.y += resultantForceVec.y * dt;
 
-        // stop moving by friction
+        // Stop moving by friction
         if (currentVelocity.x > 0 && resultantVelocity.x <= 0) {
             resultantVelocity.x = 0;
         }

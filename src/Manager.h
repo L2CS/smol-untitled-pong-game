@@ -10,35 +10,35 @@
 #include <vector>
 
 struct Manager {
-    // screen dims
+    // Screen dims
     int screenWidth;
     int screenHeight;
-    // level radius
-    // TODO: write level loader to load levels instead of this
+    // Level radius
+    // TODO: Write level loader to load levels instead of this
     float levelRadius;
-    // offset of paddles from the level boundary
+    // Offset of paddles from the level boundary
     float levelOffset;
-    // boundary width of each paddle (1v1 only)
-    // TODO: make this dependent on the number of players
+    // Boundary width of each paddle (1v1 only)
+    // TODO: Make this dependent on the number of players
     float paddleBoundaryWidth;
-    // game clock -> used for physics
+    // Game clock -> used for physics
     std::chrono::system_clock::time_point lastUpdateTime;
     std::chrono::system_clock::time_point lastDrawTime;
-    // map of entities
+    // Map of entities
     EntityMap entities;
-    // level boundary points
+    // Level boundary points
     Vector2* boundaryPoints;
     int numPoints;
-    // goal points sections
+    // Goal points sections
     Vector2** goalSections;
     int numGoalPoints;
     std::vector<Player*> players;
     // TODO: write handlers for adding powerups
     // std::vector<Powerup*> powerupsToAdd;
 
-    // constructor
+    // Constructor
     Manager(int _screenWidth, int _screenHeight, float _levelRadius, float _levelOffset, float _paddleBoundaryWidth);
-    // member functions for managing entities
+    // Member functions for managing entities
     void addEntity(Entity* _entity);
     void deleteEntity(EntityId _id);
     void addPlayer(Player* player);

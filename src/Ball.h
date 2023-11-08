@@ -6,12 +6,12 @@
 
 struct Manager; // Forward declaration of Manager
 
-// TODO: add CheckCollisionPointPoly instead of using a rectangle for collision detection
+// TODO: Add CheckCollisionPointPoly instead of using a rectangle for collision detection
 
 struct Ball : Entity {
-    // max ship velocity
+    // Max ship velocity
     float maxVelocity;
-    // current ship velocity
+    // Current ship velocity
     Vector2 currentVelocity;
 
     Ball(Vector2 _position, Vector2 _outputDims, Vector2 _hitboxDims, float _maxVelocity);

@@ -22,12 +22,12 @@ Ball::Ball(Vector2 _position, Vector2 _outputDims, Vector2 _hitboxDims, float _m
     maxVelocity = _maxVelocity;
 }
 
-//------------------------------------------------------------------------------------
-// Out-Of-Bounds check
-//------------------------------------------------------------------------------------
+/**
+ * Hitting goal check
+ */
 bool Ball::hitGoal(Manager* _manager, Vector2 _position)
 {
-    // TODO: is there a faster way to do this???
+    // TODO: Is there a faster way to do this???
     for (int i = 0; i < _manager->numGoalPoints - 1; i++) {
         Vector2* topPoints = _manager->goalSections[0];
         Vector2* bottomPoints = _manager->goalSections[1];
@@ -52,9 +52,9 @@ bool Ball::hitGoal(Manager* _manager, Vector2 _position)
     return false;
 }
 
-//------------------------------------------------------------------------------------
-// Out-Of-Bounds check
-//------------------------------------------------------------------------------------
+/**
+ * Out-of-bounds check
+ */
 bool Ball::outOfBounds(Manager* _manager)
 {
     if (CheckCollisionPointCircle({ position.x, position.y }, { float(_manager->screenWidth / 2), float(_manager->screenHeight / 2) }, 300.0f)) {
@@ -77,9 +77,9 @@ bool Ball::outOfBounds(Manager* _manager)
     return true;
 }
 
-//------------------------------------------------------------------------------------
-// Update ball
-//------------------------------------------------------------------------------------
+/**
+ * Update ball
+ */
 void Ball::update(Manager* _manager, int _screenWidth, int _screenHeight, float dt)
 {
     Vector2 oldPosition = position;

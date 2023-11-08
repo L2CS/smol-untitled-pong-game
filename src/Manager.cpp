@@ -45,7 +45,7 @@ void Manager::addPlayer(Player* player)
 
 void Manager::update()
 {
-    //  remove entities that need to be removed
+    //  Remove entities that need to be removed
     for (auto it = entities.begin(); it != entities.end();) {
         auto e = it->second;
         if (e->destroyed) {
@@ -63,7 +63,7 @@ void Manager::update()
     for (auto entry : entities) {
         auto entity = entry.second;
 
-        // TODO: implement updating for player type
+        // TODO: Implement updating for player type
         if (entity->type == EntityType::PLAYER) {
             Player* player = static_cast<Player*>(entity);
             player->update(this, screenWidth, screenHeight, dt);
@@ -81,7 +81,7 @@ void Manager::update()
 void Manager::draw()
 {
     DrawCircleLines(screenWidth / 2, screenHeight / 2, levelRadius, WHITE);
-    // draw goals on each side
+    // Draw goals on each side
     DrawLineStrip(goalSections[0], 20, RED);
     DrawLineStrip(goalSections[1], 20, BLUE);
 
@@ -92,7 +92,7 @@ void Manager::draw()
 
     for (auto entry : entities) {
         auto entity = entry.second;
-        // TODO: implement drawing for player type
+        // TODO: Implement drawing for player type
         if (entity->type == EntityType::PLAYER) {
             Player* player = static_cast<Player*>(entity);
             player->draw();
