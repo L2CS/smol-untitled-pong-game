@@ -46,7 +46,7 @@ void Manager::addPlayer(Player* player)
 void Manager::update()
 {
     //  Remove entities that need to be removed
-    entities.erase(std::remove_if(entities.begin(), entities.end(), [](const auto& pair) { return pair.second->destroyed; }), entities.end());
+    std::erase_if(entities, [](const auto& pair) { return pair.second->destroyed; });
 
     auto now = std::chrono::system_clock::now();
     auto elapsed = now - lastUpdateTime;
