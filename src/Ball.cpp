@@ -7,6 +7,42 @@
 #include <cmath>
 #include <iostream>
 
+/**
+ * Collision check for circle and polygon
+ */
+bool CheckCollisionCirclePolygon(Vector2 circleCenter, float circleRadius, Vector2 polygonPoints[], int numPoints)
+{
+    // Check if the circle collides with the edges of the polygon
+    for (int i = 0; i < numPoints; ++i) {
+        Vector2 p1 = polygonPoints[i];
+        Vector2 p2 = polygonPoints[(i + 1) % numPoints]; // Wrap around to the first point
+
+        // Calculate the vector between the circle center and the line segment
+        Vector2 v = { circleCenter.x - p1.x, circleCenter.y - p1.y };
+        Vector2 edge = { p2.x - p1.x, p2.y - p1.y };
+
+        // Project the circle center onto the line segment
+        float projection = (v.x * edge.x + v.y * edge.y) / (edge.x * edge.x + edge.y * edge.y);
+        projection = fmaxf(0, fminf(1, projection));
+
+        // Calculate the closest point on the line segment to the circle center
+        Vector2 closest = {
+            p1.x + projection * edge.x,
+            p1.y + projection * edge.y
+        };
+
+        // Check if the distance between the circle center and the closest point is within the circle's radius
+        float distance = sqrtf((circleCenter.x - closest.x) * (circleCenter.x - closest.x) +
+                               (circleCenter.y - closest.y) * (circleCenter.y - closest.y));
+
+        if (distance <= circleRadius) {
+            return true; // Collision detected
+        }
+    }
+
+    return false; // No collision detected
+}
+
 Ball::Ball(Vector2 _position, Vector2 _outputDims, Vector2 _hitboxDims, float _maxVelocity)
     : Entity(_position, _outputDims, _hitboxDims, EntityType::BALL)
 {
@@ -105,26 +141,28 @@ void Ball::update(Manager* _manager, int _screenWidth, int _screenHeight, float 
     // TODO: ADD GLOBAL HITBOX VAR
     // if (IsKeyDown(KEY_H)) showHitboxes = !showHitboxes;
 }
-Vector2 polyPoints[8];
-Vector2 polyPoints2[8];
+
 void Ball::handleCollisions(Manager* _manager)
 {
     const int numPoints = 8; // Number of points in the collider
 
     // Offsets for the collider points
     Vector2 offsets[numPoints] = {
-        { 20.0f, -1.0f },
-        { 2.0f, 2.0f },
-        { -10.0f, 2.0f },
-        { -28.0f, -1.0f },
-        { -26.0f, -14.0f },
-        { -10.0f, -12.0f },
-        { 2.0f, -12.0f },
-        { 18.0f, -14.0f }
+        { 15.0f, -5.0f },
+        { 2.0f, -3.0f },
+        { -10.0f, -3.0f },
+        { -23.0f, -5.0f },
+        { -23.0f, -8.0f },
+        { -10.0f, -6.0f },
+        { 2.0f, -6.0f },
+        { 15.0f, -8.0f }
     };
+
     // Iterate through players and check collisions
     for (Player* player : _manager->players) {
+        Vector2 polyPoints[8];
         float rotationAngle = player->rotation * (float)M_PI / 180.0f;
+
         for (int i = 0; i < numPoints; ++i) {
             float x = offsets[i].x * cosf(rotationAngle) -
                       offsets[i].y * sinf(rotationAngle);
@@ -133,11 +171,9 @@ void Ball::handleCollisions(Manager* _manager)
 
             polyPoints[i] = { player->position.x + x, player->position.y + y };
         }
-        // TODO: Use the correct number of points and angles based on your
-        // game's requirements
 
         // Check collisions using CheckCollisionPointPoly
-        if (CheckCollisionPointPoly(position, polyPoints, 8)) {
+        if (CheckCollisionCirclePolygon(position, 5.0f, polyPoints, 8)) {
             // Calculate the collision point relative to the center of the circle
             float relativeX = position.x - player->position.x;
             float relativeY = position.y - player->position.y;
@@ -156,8 +192,10 @@ void Ball::handleCollisions(Manager* _manager)
 void Ball::draw()
 {
     DrawCircle(position.x, position.y, outputDims.x, WHITE);
-    for (int i = 0; i < 8; i++) {
-        DrawPixel(polyPoints[i].x, polyPoints[i].y, RED);
-    }
     // DrawRectangleLines(position.x - origin.x, position.y - origin.y, hitboxDims.x, hitboxDims.y, RED);
+
+    // Draw player collider
+    // for (int i = 0; i < 8; i++) {
+    //     DrawPixel(polyPoints[i].x, polyPoints[i].y, RED);
+    // }
 }
