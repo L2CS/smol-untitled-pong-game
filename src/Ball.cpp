@@ -105,33 +105,38 @@ void Ball::update(Manager* _manager, int _screenWidth, int _screenHeight, float 
     // TODO: ADD GLOBAL HITBOX VAR
     // if (IsKeyDown(KEY_H)) showHitboxes = !showHitboxes;
 }
-Vector2 polyPoints[3];
+Vector2 polyPoints[8];
 void Ball::handleCollisions(Manager* _manager)
 {
+    const int numPoints = 8; // Number of points in the collider
+
+    // Offsets for the collider points
+    Vector2 offsets[numPoints] = {
+        { 15.0f, -5.0f },
+        { 2.0f, -3.0f },
+        { -10.0f, -3.0f },
+        { -23.0f, -5.0f },
+        { -23.0f, -8.0f },
+        { -10.0f, -6.0f },
+        { 2.0f, -6.0f },
+        { 15.0f, -8.0f }
+    };
     // Iterate through players and check collisions
     for (Player* player : _manager->players) {
-        // Define the offsets for the collider points
-        Vector2 offset1 = { -3.0f, -1.0f };
-        Vector2 offset2 = { -22.0f, -8.0f };
-        Vector2 offset3 = { 14.0f, -8.0f };
         float rotationAngle = player->rotation * (float)M_PI / 180.0f;
+        for (int i = 0; i < numPoints; ++i) {
+            float x = offsets[i].x * cosf(rotationAngle) - offsets[i].y * sinf(rotationAngle);
+            float y = offsets[i].x * sinf(rotationAngle) + offsets[i].y * cosf(rotationAngle);
 
-        // Rotate each point and apply the offsets
-        polyPoints[0] = {
-            player->position.x + (offset1.x * cosf(rotationAngle) - offset1.y * sinf(rotationAngle)),
-            player->position.y + (offset1.x * sinf(rotationAngle) + offset1.y * cosf(rotationAngle))
-        };
+            polyPoints[i] = {
+                player->position.x + x,
+                player->position.y + y
+            };
+            std::cout << polyPoints[i].x << std::endl;
+        }
+        // TODO: Use the correct number of points and angles based on your
+        // game's requirements
 
-        polyPoints[1] = {
-            player->position.x + (offset2.x * cosf(rotationAngle) - offset2.y * sinf(rotationAngle)),
-            player->position.y + (offset2.x * sinf(rotationAngle) + offset2.y * cosf(rotationAngle))
-        };
-
-        polyPoints[2] = {
-            player->position.x + (offset3.x * cosf(rotationAngle) - offset3.y * sinf(rotationAngle)),
-            player->position.y + (offset3.x * sinf(rotationAngle) + offset3.y * cosf(rotationAngle))
-        };
-        // TODO: Use the correct number of points and angles based on your game's requirements
         // Check collisions using CheckCollisionPointPoly
         if (CheckCollisionPointPoly(position, polyPoints, 3)) {
             // Calculate the collision point relative to the center of the circle
@@ -153,9 +158,8 @@ void Ball::handleCollisions(Manager* _manager)
 void Ball::draw()
 {
     DrawCircle(position.x, position.y, outputDims.x, WHITE);
-    DrawPixel(polyPoints[0].x, polyPoints[0].y, RED);
-    DrawPixel(polyPoints[1].x, polyPoints[1].y, RED);
-    DrawPixel(polyPoints[2].x, polyPoints[2].y, RED);
-    DrawTriangle(polyPoints[1], polyPoints[0], polyPoints[2], BLUE);
+    for (int i = 0; i < 8; i++) {
+        DrawPixel(polyPoints[i].x, polyPoints[i].y, RED);
+    }
     // DrawRectangleLines(position.x - origin.x, position.y - origin.y, hitboxDims.x, hitboxDims.y, RED);
 }
