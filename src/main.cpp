@@ -68,7 +68,7 @@ int main()
         (Vector2){ (float)screenWidth / 2, (float)(screenHeight / 2) },
         (Vector2){ 5.0, 5.0 },
         (Vector2){ 5.0, 5.0 },
-        0.25f);
+        0.2f);
 
     mgr->addEntity(p1);
     mgr->addEntity(p2);

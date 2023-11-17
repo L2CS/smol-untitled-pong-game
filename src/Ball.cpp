@@ -106,43 +106,41 @@ void Ball::update(Manager* _manager, int _screenWidth, int _screenHeight, float 
     // if (IsKeyDown(KEY_H)) showHitboxes = !showHitboxes;
 }
 Vector2 polyPoints[8];
+Vector2 polyPoints2[8];
 void Ball::handleCollisions(Manager* _manager)
 {
     const int numPoints = 8; // Number of points in the collider
 
     // Offsets for the collider points
     Vector2 offsets[numPoints] = {
-        { 15.0f, -5.0f },
-        { 2.0f, -3.0f },
-        { -10.0f, -3.0f },
-        { -23.0f, -5.0f },
-        { -23.0f, -8.0f },
-        { -10.0f, -6.0f },
-        { 2.0f, -6.0f },
-        { 15.0f, -8.0f }
+        { 20.0f, -1.0f },
+        { 2.0f, 2.0f },
+        { -10.0f, 2.0f },
+        { -28.0f, -1.0f },
+        { -26.0f, -14.0f },
+        { -10.0f, -12.0f },
+        { 2.0f, -12.0f },
+        { 18.0f, -14.0f }
     };
     // Iterate through players and check collisions
     for (Player* player : _manager->players) {
         float rotationAngle = player->rotation * (float)M_PI / 180.0f;
         for (int i = 0; i < numPoints; ++i) {
-            float x = offsets[i].x * cosf(rotationAngle) - offsets[i].y * sinf(rotationAngle);
-            float y = offsets[i].x * sinf(rotationAngle) + offsets[i].y * cosf(rotationAngle);
+            float x = offsets[i].x * cosf(rotationAngle) -
+                      offsets[i].y * sinf(rotationAngle);
+            float y = offsets[i].x * sinf(rotationAngle) +
+                      offsets[i].y * cosf(rotationAngle);
 
-            polyPoints[i] = {
-                player->position.x + x,
-                player->position.y + y
-            };
-            std::cout << polyPoints[i].x << std::endl;
+            polyPoints[i] = { player->position.x + x, player->position.y + y };
         }
         // TODO: Use the correct number of points and angles based on your
         // game's requirements
 
         // Check collisions using CheckCollisionPointPoly
-        if (CheckCollisionPointPoly(position, polyPoints, 3)) {
+        if (CheckCollisionPointPoly(position, polyPoints, 8)) {
             // Calculate the collision point relative to the center of the circle
             float relativeX = position.x - player->position.x;
             float relativeY = position.y - player->position.y;
-            std::cout << relativeX << ", " << relativeY << std::endl;
 
             // Calculate the angle of collision
             float collisionAngle = atan2f(relativeY, relativeX);
