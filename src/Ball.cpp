@@ -172,7 +172,7 @@ void Ball::handleCollisions(Manager* _manager)
             polyPoints[i] = { player->position.x + x, player->position.y + y };
         }
 
-        // Check collisions using CheckCollisionPointPoly
+        // Check collisions using CheckCollisionCirclePoly
         if (CheckCollisionCirclePolygon(position, 5.0f, polyPoints, 8)) {
             // Calculate the collision point relative to the center of the circle
             float relativeX = position.x - player->position.x;
