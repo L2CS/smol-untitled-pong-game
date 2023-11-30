@@ -68,7 +68,7 @@ int main()
         (Vector2){ (float)screenWidth / 2, (float)(screenHeight / 2) },
         (Vector2){ 5.0, 5.0 },
         (Vector2){ 5.0, 5.0 },
-        0.1f);
+        0.2f);
 
     mgr->addEntity(p1);
     mgr->addEntity(p2);
@@ -106,10 +106,6 @@ int main()
         // Draw
         BeginDrawing();
         mgr->draw();
-
-        // Draw collision circles - Remove when done implementing poly collisions
-        DrawCircle(p1->position.x, p1->position.y, p1->outputDims.x / 2, BLUE);
-        DrawCircle(p2->position.x, p2->position.y, p2->outputDims.x / 2, RED);
 
         DrawFPS(10, 10);
 

@@ -7,6 +7,42 @@
 #include <cmath>
 #include <iostream>
 
+/**
+ * Collision check for circle and polygon
+ */
+bool CheckCollisionCirclePolygon(Vector2 circleCenter, float circleRadius, Vector2 polygonPoints[], int numPoints)
+{
+    // Check if the circle collides with the edges of the polygon
+    for (int i = 0; i < numPoints; ++i) {
+        Vector2 p1 = polygonPoints[i];
+        Vector2 p2 = polygonPoints[(i + 1) % numPoints]; // Wrap around to the first point
+
+        // Calculate the vector between the circle center and the line segment
+        Vector2 v = { circleCenter.x - p1.x, circleCenter.y - p1.y };
+        Vector2 edge = { p2.x - p1.x, p2.y - p1.y };
+
+        // Project the circle center onto the line segment
+        float projection = (v.x * edge.x + v.y * edge.y) / (edge.x * edge.x + edge.y * edge.y);
+        projection = fmaxf(0, fminf(1, projection));
+
+        // Calculate the closest point on the line segment to the circle center
+        Vector2 closest = {
+            p1.x + projection * edge.x,
+            p1.y + projection * edge.y
+        };
+
+        // Check if the distance between the circle center and the closest point is within the circle's radius
+        float distance = sqrtf((circleCenter.x - closest.x) * (circleCenter.x - closest.x) +
+                               (circleCenter.y - closest.y) * (circleCenter.y - closest.y));
+
+        if (distance <= circleRadius) {
+            return true; // Collision detected
+        }
+    }
+
+    return false; // No collision detected
+}
+
 Ball::Ball(Vector2 _position, Vector2 _outputDims, Vector2 _hitboxDims, float _maxVelocity)
     : Entity(_position, _outputDims, _hitboxDims, EntityType::BALL)
 {
@@ -108,10 +144,36 @@ void Ball::update(Manager* _manager, int _screenWidth, int _screenHeight, float 
 
 void Ball::handleCollisions(Manager* _manager)
 {
+    const int numPoints = 8; // Number of points in the collider
+
+    // Offsets for the collider points
+    Vector2 offsets[numPoints] = {
+        { 15.0f, -5.0f },
+        { 2.0f, -3.0f },
+        { -10.0f, -3.0f },
+        { -23.0f, -5.0f },
+        { -23.0f, -8.0f },
+        { -10.0f, -6.0f },
+        { 2.0f, -6.0f },
+        { 15.0f, -8.0f }
+    };
+
     // Iterate through players and check collisions
     for (Player* player : _manager->players) {
-        // TODO: Replace with poly collisions using CheckCollisionPointPoly()
-        if (CheckCollisionPointCircle({ position.x, position.y }, { player->position.x, player->position.y }, 25.0f)) {
+        Vector2 polyPoints[8];
+        float rotationAngle = player->rotation * (float)M_PI / 180.0f;
+
+        for (int i = 0; i < numPoints; ++i) {
+            float x = offsets[i].x * cosf(rotationAngle) -
+                      offsets[i].y * sinf(rotationAngle);
+            float y = offsets[i].x * sinf(rotationAngle) +
+                      offsets[i].y * cosf(rotationAngle);
+
+            polyPoints[i] = { player->position.x + x, player->position.y + y };
+        }
+
+        // Check collisions using CheckCollisionCirclePoly
+        if (CheckCollisionCirclePolygon(position, 5.0f, polyPoints, 8)) {
             // Calculate the collision point relative to the center of the circle
             float relativeX = position.x - player->position.x;
             float relativeY = position.y - player->position.y;
