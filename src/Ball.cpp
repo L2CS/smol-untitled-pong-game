@@ -193,9 +193,4 @@ void Ball::draw()
 {
     DrawCircle(position.x, position.y, outputDims.x, WHITE);
     // DrawRectangleLines(position.x - origin.x, position.y - origin.y, hitboxDims.x, hitboxDims.y, RED);
-
-    // Draw player collider
-    // for (int i = 0; i < 8; i++) {
-    //     DrawPixel(polyPoints[i].x, polyPoints[i].y, RED);
-    // }
 }
