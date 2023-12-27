@@ -2,6 +2,7 @@
 
 #include "Entity.h"
 
+#include <memory>
 #include <vector>
 
 struct Manager; // Forward declaration of Manager

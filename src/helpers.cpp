@@ -1,25 +1,30 @@
 #include "helpers.h"
+
 #include "Manager.h"
 
-Vector2* generateCirclePoints(int numPoints, Vector2 center, double radius)
+#include <cmath>
+
+std::vector<Vector2> generateCirclePoints(int numPoints, Vector2 center, double radius)
 {
-    Vector2* points = new Vector2[numPoints];
+    std::vector<Vector2> points = {};
 
     for (int i = 0; i < numPoints; ++i) {
         double angle = 2 * M_PI * i / numPoints;
-        points[i].x = (float)(center.x + radius * cos(angle));
-        points[i].y = (float)(center.y + radius * sin(angle));
+        Vector2 p;
+        p.x = (float)(center.x + radius * cos(angle));
+        p.y = (float)(center.y + radius * sin(angle));
+        points.emplace_back(p);
     }
 
     return points;
 }
 
-Vector2** generateGoalPoints(Manager* _manager, int numPointsEach, float start, float end, double radius)
+std::array<std::vector<Vector2>, 2> generateGoalPoints(Manager* _manager, int numPointsEach, float start, float end, double radius)
 {
-    Vector2** sections = new Vector2*[2];
+    std::array<std::vector<Vector2>, 2> sections;
 
-    Vector2* topPoints = new Vector2[numPointsEach];
-    Vector2* bottomPoints = new Vector2[numPointsEach];
+    std::vector<Vector2> topPoints(numPointsEach);
+    std::vector<Vector2> bottomPoints(numPointsEach);
 
     for (int i = 0; i < numPointsEach; i++) {
         topPoints[i].x = (((float)i * (end - start)) / (float)numPointsEach) + start;
