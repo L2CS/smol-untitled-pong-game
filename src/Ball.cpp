@@ -1,11 +1,12 @@
 #include "Ball.h"
+
 #include "Manager.h"
 #include "raymath.h"
 
-#define _USE_MATH_DEFINES
-#include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <memory>
+#include <vector>
 
 /**
  * Collision check for circle and polygon
@@ -46,6 +47,7 @@ bool CheckCollisionCirclePolygon(Vector2 circleCenter, float circleRadius, Vecto
 Ball::Ball(Vector2 _position, Vector2 _outputDims, Vector2 _hitboxDims, float _maxVelocity)
     : Entity(_position, _outputDims, _hitboxDims, EntityType::BALL)
 {
+    currentVelocity = { 0, 0 };
     float upDown = static_cast<float>(rand()) / RAND_MAX;
 
     currentVelocity = Vector2{ static_cast<float>(rand()) / RAND_MAX, static_cast<float>(rand()) / RAND_MAX };
@@ -66,8 +68,8 @@ bool Ball::hitGoal(Manager* _manager, Vector2 _position)
 {
     // TODO: Is there a faster way to do this???
     for (int i = 0; i < _manager->numGoalPoints - 1; i++) {
-        Vector2* topPoints = _manager->goalSections[0];
-        Vector2* bottomPoints = _manager->goalSections[1];
+        std::vector<Vector2> topPoints = _manager->_goalSections[0];
+        std::vector<Vector2> bottomPoints = _manager->_goalSections[1];
 
         Vector2 p1 = topPoints[i];
         Vector2 p2 = topPoints[i + 1];
@@ -159,7 +161,7 @@ void Ball::handleCollisions(Manager* _manager)
     };
 
     // Iterate through players and check collisions
-    for (Player* player : _manager->players) {
+    for (auto player : _manager->players) {
         Vector2 polyPoints[8];
         float rotationAngle = player->rotation * (float)M_PI / 180.0f;
 

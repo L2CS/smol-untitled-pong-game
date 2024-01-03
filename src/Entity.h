@@ -1,7 +1,9 @@
 #pragma once
 
 #include "raylib.h"
+
 #include <chrono>
+#include <memory>
 #include <unordered_map>
 #include <vector>
 
@@ -28,4 +30,4 @@ struct Entity {
     void draw();
 };
 
-using EntityMap = std::unordered_map<EntityId, Entity*>;
+using EntityMap = std::unordered_map<EntityId, std::shared_ptr<Entity>>;

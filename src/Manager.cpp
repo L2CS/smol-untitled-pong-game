@@ -19,26 +19,26 @@ Manager::Manager(int _screenWidth, int _screenHeight, float _levelRadius, float 
     numGoalPoints = 20;
 
     Vector2 center = Vector2{ static_cast<float>(_screenWidth / 2), static_cast<float>(_screenHeight / 2) };
-    boundaryPoints = generateCirclePoints(numPoints, center, _levelRadius);
+    _boundaryPoints = generateCirclePoints(numPoints, center, _levelRadius);
 
     Vector2 offset = Vector2{ static_cast<float>(_paddleBoundaryWidth / 2), 0 };
     Vector2 start = Vector2Subtract(center, offset);
     Vector2 end = Vector2Add(center, offset);
-    goalSections = generateGoalPoints(this, numGoalPoints, start.x, end.x, _levelRadius - 5);
+    _goalSections = generateGoalPoints(this, numGoalPoints, start.x, end.x, _levelRadius - 5);
     std::cout << start.x << "," << end.x << std::endl;
 }
 
-void Manager::addEntity(Entity* _entity)
+void Manager::addEntity(std::shared_ptr<Entity> entity)
 {
-    entities[_entity->id] = _entity;
+    _entities[entity->id] = entity;
 }
 
-void Manager::deleteEntity(EntityId _id)
+void Manager::deleteEntity(EntityId id)
 {
-    entities.erase(_id);
+    _entities.erase(id);
 }
 
-void Manager::addPlayer(Player* player)
+void Manager::addPlayer(std::shared_ptr<Player> player)
 {
     players.push_back(player);
 }
@@ -46,24 +46,22 @@ void Manager::addPlayer(Player* player)
 void Manager::update()
 {
     //  Remove entities that need to be removed
-    std::erase_if(entities, [](const auto& pair) { return pair.second->destroyed; });
+    std::erase_if(_entities, [](const auto& pair) { return pair.second->destroyed; });
 
     auto now = std::chrono::system_clock::now();
     auto elapsed = now - lastUpdateTime;
     float dt = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
     lastUpdateTime = now;
 
-    for (auto entry : entities) {
+    for (auto entry : _entities) {
         auto entity = entry.second;
 
         // TODO: Implement updating for player type
         if (entity->type == EntityType::PLAYER) {
-            Player* player = static_cast<Player*>(entity);
-            player->update(this, screenWidth, screenHeight, dt);
+            std::static_pointer_cast<Player>(entity)->update(this, screenWidth, screenHeight, dt);
         }
         else if (entity->type == EntityType::BALL) {
-            Ball* ball = static_cast<Ball*>(entity);
-            ball->update(this, screenWidth, screenHeight, dt);
+            std::static_pointer_cast<Ball>(entity)->update(this, screenWidth, screenHeight, dt);
         }
         else {
             entity->update();
@@ -75,24 +73,22 @@ void Manager::draw()
 {
     DrawCircleLines(screenWidth / 2, screenHeight / 2, levelRadius, WHITE);
     // Draw goals on each side
-    DrawLineStrip(goalSections[0], 20, RED);
-    DrawLineStrip(goalSections[1], 20, BLUE);
+    DrawLineStrip(&(_goalSections[0])[0], 20, RED);
+    DrawLineStrip(&(_goalSections[1])[0], 20, BLUE);
 
     auto now = std::chrono::system_clock::now();
     auto elapsed = now - lastDrawTime;
     float dt = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
     lastDrawTime = now;
 
-    for (auto entry : entities) {
+    for (auto entry : _entities) {
         auto entity = entry.second;
         // TODO: Implement drawing for player type
         if (entity->type == EntityType::PLAYER) {
-            Player* player = static_cast<Player*>(entity);
-            player->draw();
+            std::static_pointer_cast<Player>(entity)->draw();
         }
         else if (entity->type == EntityType::BALL) {
-            Ball* ball = static_cast<Ball*>(entity);
-            ball->draw();
+            std::static_pointer_cast<Ball>(entity)->draw();
         }
     }
 }

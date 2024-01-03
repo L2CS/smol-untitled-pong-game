@@ -2,7 +2,7 @@
 #include "Player.h"
 #include "raylib.h"
 
-#include <iostream>
+#include <memory>
 
 int main()
 {
@@ -16,7 +16,8 @@ int main()
     // InitAudioDevice();
     // SetMasterVolume(0.2);
 
-    Manager* mgr = new Manager(
+    // TODO: Make into unique_ptr, stop passing around manager everywhere
+    std::shared_ptr<Manager> mgr = std::make_shared<Manager>(
         screenWidth,
         screenHeight,
         levelRadius,
@@ -36,7 +37,7 @@ int main()
     std::vector<int> right2{ KEY_D };
     Keybinds p2Binds = { left2, right2 };
 
-    Player* p1 = new Player(
+    std::shared_ptr<Player> p1 = std::make_shared<Player>(
         playerSprite,
         (Vector2){ 3.0f, 11.0f },
         (Vector2){ 32.0f, 32.0f },
@@ -50,7 +51,7 @@ int main()
         1.0f,
         p1Binds);
 
-    Player* p2 = new Player(
+    std::shared_ptr<Player> p2 = std::make_shared<Player>(
         playerSprite,
         (Vector2){ 3.0f, 11.0f },
         (Vector2){ 32.0f, 32.0f },
@@ -64,7 +65,7 @@ int main()
         1.0f,
         p2Binds);
 
-    Ball* b = new Ball(
+    std::shared_ptr<Ball> b = std::make_shared<Ball>(
         (Vector2){ (float)screenWidth / 2, (float)(screenHeight / 2) },
         (Vector2){ 5.0, 5.0 },
         (Vector2){ 5.0, 5.0 },
