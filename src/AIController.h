@@ -14,34 +14,37 @@ public:
         MEDIUM = 1,
         HARD = 2
     };
-    
+
     AIController(int playerIndex, Difficulty difficulty = MEDIUM);
-    
+
     int update(Manager* manager, std::shared_ptr<Player> player, std::shared_ptr<Ball> ball, float deltaTime);
-    
+
     // Configuration
     void setDifficulty(Difficulty difficulty);
-    Difficulty getDifficulty() const { return currentDifficulty; }
-    
+    Difficulty getDifficulty() const
+    {
+        return currentDifficulty;
+    }
+
     // Debug info
     void drawDebugInfo(Manager* manager, std::shared_ptr<Player> player);
 
 private:
     int aiPlayerIndex;
     Difficulty currentDifficulty;
-    
+
     // AI state
     Vector2 targetPosition;
     Vector2 predictedBallPosition;
     float reactionTimer;
     float lastDecisionTime;
     bool ballMovingTowardsAI;
-    
+
     float reactionTime;
     float predictionAccuracy;
     float maxSpeed;
     float trackingRange;
-    
+
     // Internal methods
     void updateDifficultyParams();
     Vector2 predictBallTrajectory(std::shared_ptr<Ball> ball, float timeAhead);

@@ -2,10 +2,10 @@
 
 #include "Ball.h"
 #include "helpers.h"
-#include "Player.h"
-#include "Visualizer.h"
 #include "MusicManager.h"
 #include "OsuParser.h"
+#include "Player.h"
+#include "Visualizer.h"
 
 #include "raymath.h"
 
@@ -36,27 +36,27 @@ struct Manager {
     int numPoints;
 
     std::vector<std::shared_ptr<Player>> players;
-    
+
     // Scoring system
     std::vector<int> playerScores;
     std::vector<float> playerMultipliers; // Current score multipliers for each player
-    std::vector<float> lastHitTimes; // Last time each player hit the ball
-    
+    std::vector<float> lastHitTimes;      // Last time each player hit the ball
+
     // Osu! beatmap integration
     OsuParser osuParser;
     std::vector<float> hitObjectTimes;
-    
+
     // Hit feedback system
-    std::vector<int> consecutiveHits; // Track consecutive on-beat hits per player
-    std::vector<float> lastHitFeedbackTime; // When to stop showing feedback
+    std::vector<int> consecutiveHits;         // Track consecutive on-beat hits per player
+    std::vector<float> lastHitFeedbackTime;   // When to stop showing feedback
     std::vector<std::string> hitFeedbackText; // Current feedback text per player
-    std::vector<Color> hitFeedbackColor; // Feedback text color per player
-    
+    std::vector<Color> hitFeedbackColor;      // Feedback text color per player
+
 public:
     // Modular components
     MusicManager musicManager;
     Visualizer visualizer;
-    
+
     // Background and game state
     Texture2D backgroundTexture;
     float gameStartTime;
@@ -76,12 +76,12 @@ public:
     void addPlayer(std::shared_ptr<Player> player);
     void update();
     void draw();
-    
+
     // Scoring functions
     void scoreGoal(int playerIndex);
     int getPlayerScore(int playerIndex);
     float getPlayerBoundaryWidth(int playerIndex);
-    
+
     // Game state functions
     void setSongStartTime();
     float getCurrentBeatIntensity() const;
@@ -92,20 +92,20 @@ public:
     void onPaddleHit();
     void onNonPaddleHit();
     void triggerVisualizerBeat(float intensity);
-    
+
     // Score multiplier system
     void onPlayerHitBall(int playerIndex);
     float calculateMultiplier(int playerIndex, float hitTime);
     void updateMultipliers();
     void drawMultipliers();
-    
+
     // Hit timing visual cues
     void drawHitTimingCues();
     void showHitFeedback(int playerIndex, float accuracy);
     void drawHitFeedback();
     Color getBorderColorForTiming();
     std::vector<float> getUpcomingHitObjects(float currentTime, float lookAheadTime = 2000.0f);
-    
+
     // AI management
     void enableAI(int playerIndex, AIController::Difficulty difficulty = AIController::MEDIUM);
     void disableAI(int playerIndex);
@@ -114,7 +114,7 @@ public:
 public:
     // Map of entities
     EntityMap _entities;
-    
+
     // Level boundary points
     std::vector<Vector2> _boundaryPoints;
 

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Entity.h"
 #include "AIController.h"
+#include "Entity.h"
 
-#include <vector>
 #include <memory>
+#include <vector>
 
 struct Manager; // Forward declaration of Manager
 
@@ -27,7 +27,7 @@ struct Player : Entity {
     float hp;                // Health points
     Keybinds binds;          // Keybinds
     float angularVelocity;   // Angular velocity for circular movement
-    
+
     // AI control
     std::unique_ptr<AIController> aiController;
     bool isAIControlled;
@@ -36,7 +36,7 @@ struct Player : Entity {
     bool outOfBounds(Manager* _manager, Vector2 _position, int playerIndex);
     void update(Manager* _manager, int _screenWidth, int _screenHeight, float dt, int playerIndex);
     void draw();
-    
+
     // AI control methods
     void enableAI(AIController::Difficulty difficulty = AIController::MEDIUM);
     void disableAI();

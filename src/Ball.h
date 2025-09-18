@@ -22,7 +22,7 @@ class ParticleSystem {
 public:
     std::vector<Particle> particles;
     static const int MAX_PARTICLES = 50;
-    
+
     void update(float dt);
     void draw();
     void emit(Vector2 position, Vector2 velocity, float intensity);

@@ -2,19 +2,19 @@
 #include "Player.h"
 #include "raylib.h"
 
-#include <memory>
 #include <cstring>
+#include <memory>
 
 int main(int argc, char* argv[])
 {
     // Parse command line arguments
     const char* musicFile = "./backgorund.wav"; // Default music file
-    const char* backgroundImage = "./bg.png"; // Default background (supports .png, .jpg, .bmp, etc.)
-    const char* osuFile = nullptr; // Optional osu! beatmap file
+    const char* backgroundImage = "./bg.png";   // Default background (supports .png, .jpg, .bmp, etc.)
+    const char* osuFile = nullptr;              // Optional osu! beatmap file
     bool enableAI = false;
     int aiDifficulty = 1; // 0=Easy, 1=Medium, 2=Hard
-    int aiPlayer = 1; // Which player to make AI (0 or 1)
-    
+    int aiPlayer = 1;     // Which player to make AI (0 or 1)
+
     // Parse arguments
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--ai") == 0 || strcmp(argv[i], "-ai") == 0) {
@@ -22,15 +22,19 @@ int main(int argc, char* argv[])
             // Check for difficulty parameter
             if (i + 1 < argc && argv[i + 1][0] != '-') {
                 i++;
-                if (strcmp(argv[i], "easy") == 0) aiDifficulty = 0;
-                else if (strcmp(argv[i], "medium") == 0) aiDifficulty = 1;
-                else if (strcmp(argv[i], "hard") == 0) aiDifficulty = 2;
+                if (strcmp(argv[i], "easy") == 0)
+                    aiDifficulty = 0;
+                else if (strcmp(argv[i], "medium") == 0)
+                    aiDifficulty = 1;
+                else if (strcmp(argv[i], "hard") == 0)
+                    aiDifficulty = 2;
                 else {
                     printf("Invalid AI difficulty: %s (using medium)\n", argv[i]);
                     aiDifficulty = 1;
                 }
             }
-        } else if (strcmp(argv[i], "--ai-player") == 0) {
+        }
+        else if (strcmp(argv[i], "--ai-player") == 0) {
             if (i + 1 < argc) {
                 i++;
                 aiPlayer = atoi(argv[i]);
@@ -39,15 +43,18 @@ int main(int argc, char* argv[])
                     aiPlayer = 1;
                 }
             }
-        } else if (i == 1) {
+        }
+        else if (i == 1) {
             musicFile = argv[i];
-        } else if (i == 2) {
+        }
+        else if (i == 2) {
             backgroundImage = argv[i];
-        } else if (i == 3) {
+        }
+        else if (i == 3) {
             osuFile = argv[i];
         }
     }
-    
+
     if (argc == 1) {
         printf("Usage: %s [music_file] [background_image] [osu_beatmap] [options]\n", argv[0]);
         printf("Options:\n");
@@ -61,67 +68,70 @@ int main(int argc, char* argv[])
         printf("  %s song.wav bg.png map.osu --ai hard\n", argv[0]);
         printf("  %s song.wav bg.png --ai easy --ai-player 0\n", argv[0]);
     }
-    
+
     printf("Configuration:\n");
     printf("  Music: %s\n", musicFile);
     printf("  Background: %s\n", backgroundImage);
     printf("  Beatmap: %s\n", osuFile ? osuFile : "None (default scoring)");
     if (enableAI) {
-        const char* diffNames[] = {"Easy", "Medium", "Hard"};
+        const char* diffNames[] = { "Easy", "Medium", "Hard" };
         printf("  AI: Player %d - %s\n", aiPlayer + 1, diffNames[aiDifficulty]);
-    } else {
+    }
+    else {
         printf("  AI: Disabled (human vs human)\n");
     }
-    
+
     // Start with a reasonable window size, then go fullscreen
     int screenWidth = 1920;
     int screenHeight = 1080;
-    
+
     InitWindow(screenWidth, screenHeight, "smol-pong");
     ToggleFullscreen(); // Make it fullscreen
-    
+
     // Get actual screen dimensions after fullscreen
     screenWidth = GetScreenWidth();
     screenHeight = GetScreenHeight();
     float levelRadius = fminf(screenWidth, screenHeight) * 0.25f; // Scale radius to screen
     float offset = 40.0f;
     float boundaryWidth = 150.0f; // Start with half the radius, can expand up to full radius
-    
+
     printf("Screen dimensions: %dx%d, Level radius: %.1f\n", screenWidth, screenHeight, levelRadius);
-    
+
     printf("Using Raylib audio system for cross-platform compatibility...\n");
-    
+
     // Load texture, sounds, etc.
     const char* playerSpriteLocation = "./resources/textures/paddle.png";
     Texture2D playerSprite = LoadTexture(playerSpriteLocation);
-    
+
     // Load background image with better error handling
     printf("Attempting to load background image: %s\n", backgroundImage);
-    
+
     // First try to load as an Image to get more detailed error info
     Image backgroundImg = LoadImage(backgroundImage);
-    Texture2D backgroundTexture = {0};
-    
+    Texture2D backgroundTexture = { 0 };
+
     if (backgroundImg.data != NULL) {
-        printf("Image loaded successfully - Format: %d, Width: %d, Height: %d\n", 
+        printf("Image loaded successfully - Format: %d, Width: %d, Height: %d\n",
                backgroundImg.format, backgroundImg.width, backgroundImg.height);
-        
+
         // Convert to a supported format if needed
         if (backgroundImg.format != PIXELFORMAT_UNCOMPRESSED_R8G8B8A8) {
             printf("Converting image format...\n");
             ImageFormat(&backgroundImg, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
         }
-        
+
         // Create texture from image
         backgroundTexture = LoadTextureFromImage(backgroundImg);
         UnloadImage(backgroundImg);
-        
+
         if (backgroundTexture.id != 0) {
             printf("Background texture created successfully: %s\n", backgroundImage);
-        } else {
+        }
+        else {
             printf("Failed to create texture from image\n");
         }
-    } else {
+    }
+    else {
         printf("Warning: Could not load background image: %s\n", backgroundImage);
         printf("This may be due to unsupported JPG format or corrupted file\n");
         printf("Try converting to PNG format for better compatibility\n");
@@ -141,17 +151,17 @@ int main(int argc, char* argv[])
 
     // Start background music using miniaudio
     mgr->musicManager.startBackgroundMusic(musicFile);
-    
+
     // Set the song start time for visualizer sync
     mgr->setSongStartTime();
-    
+
     // Raylib audio is now ready
     bool musicLoaded = true; // We're using Raylib audio
-    
+
     // TODO: Let the user set binds in the game menu :)
     // Set up keybinds based on AI configuration
     Keybinds p1Binds, p2Binds;
-    
+
     if (enableAI) {
         if (aiPlayer == 0) {
             // AI is Player 1, human is Player 2 - give human both key sets
@@ -160,15 +170,17 @@ int main(int argc, char* argv[])
             p1Binds = { {}, {} }; // AI doesn't need keys
             p2Binds = { humanLeft, humanRight };
             printf("Human player (P2) controls: Arrow Keys + A/D Keys\n");
-        } else {
-            // AI is Player 2, human is Player 1 - give human both key sets  
+        }
+        else {
+            // AI is Player 2, human is Player 1 - give human both key sets
             std::vector<int> humanLeft{ KEY_LEFT, KEY_A };
             std::vector<int> humanRight{ KEY_RIGHT, KEY_D };
             p1Binds = { humanLeft, humanRight };
             p2Binds = { {}, {} }; // AI doesn't need keys
             printf("Human player (P1) controls: Arrow Keys + A/D Keys\n");
         }
-    } else {
+    }
+    else {
         // Human vs Human - separate key sets
         std::vector<int> left1{ KEY_LEFT };
         std::vector<int> right1{ KEY_RIGHT };
@@ -221,7 +233,7 @@ int main(int argc, char* argv[])
 
     mgr->addPlayer(p1);
     mgr->addPlayer(p2);
-    
+
     // Enable AI if requested
     if (enableAI) {
         AIController::Difficulty difficulty = static_cast<AIController::Difficulty>(aiDifficulty);
@@ -237,15 +249,14 @@ int main(int argc, char* argv[])
     double currentTime = GetTime();
 
     // Main game loop - run until window closes or game ends with ESC
-    while (!WindowShouldClose())
-    {
+    while (!WindowShouldClose()) {
         // Check if game ended and ESC is pressed
         if (mgr->isGameEnded() && IsKeyPressed(KEY_ESCAPE)) {
             break; // Exit game loop
         }
-        
+
         // No need to update music stream - system handles it
-        
+
         // Calculate elapsed time since last frame
         double newTime = GetTime();
         double frameTime = newTime - currentTime;
@@ -263,9 +274,9 @@ int main(int argc, char* argv[])
 
         // Draw
         BeginDrawing();
-        
+
         ClearBackground(BLACK);
-        
+
         mgr->draw();
 
         DrawFPS(10, 10);

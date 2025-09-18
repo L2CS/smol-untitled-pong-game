@@ -16,18 +16,19 @@ void ParticleSystem::update(float dt)
         it->life -= dt;
         if (it->life <= 0) {
             it = particles.erase(it);
-        } else {
+        }
+        else {
             // Update particle position
             it->position.x += it->velocity.x * dt;
             it->position.y += it->velocity.y * dt;
-            
+
             // Fade out over time
             float alpha = it->life / it->maxLife;
             it->color.a = (unsigned char)(255 * alpha);
-            
+
             // Shrink over time
             it->size *= 0.98f;
-            
+
             ++it;
         }
     }
@@ -44,32 +45,34 @@ void ParticleSystem::emit(Vector2 position, Vector2 velocity, float intensity)
 {
     // Don't exceed max particles
     if (particles.size() >= MAX_PARTICLES) return;
-    
+
     // Create new particle
     Particle p;
     p.position = position;
-    
+
     // Random velocity based on ball velocity and intensity
     float angle = (rand() / (float)RAND_MAX) * 2 * M_PI;
     float speed = intensity * 50.0f + (rand() / (float)RAND_MAX) * 30.0f;
-    
+
     p.velocity.x = cosf(angle) * speed - velocity.x * 0.3f; // Trail behind ball
     p.velocity.y = sinf(angle) * speed - velocity.y * 0.3f;
-    
+
     p.life = 0.3f + (rand() / (float)RAND_MAX) * 0.4f; // 0.3-0.7 seconds
     p.maxLife = p.life;
-    
+
     // Color based on intensity - blue to white to yellow
     if (intensity < 0.5f) {
-        p.color = (Color){100, 150, 255, 255}; // Blue
-    } else if (intensity < 1.0f) {
-        p.color = (Color){200, 200, 255, 255}; // Light blue/white
-    } else {
-        p.color = (Color){255, 255, 150, 255}; // Yellow/white
+        p.color = (Color){ 100, 150, 255, 255 }; // Blue
     }
-    
+    else if (intensity < 1.0f) {
+        p.color = (Color){ 200, 200, 255, 255 }; // Light blue/white
+    }
+    else {
+        p.color = (Color){ 255, 255, 150, 255 }; // Yellow/white
+    }
+
     p.size = 2.0f + intensity * 3.0f; // Size based on intensity
-    
+
     particles.push_back(p);
 }
 
@@ -120,10 +123,10 @@ Ball::Ball(Vector2 _position, Vector2 _outputDims, Vector2 _hitboxDims, float _m
     // Start with straight vertical drop (randomly choose up or down)
     float direction = (rand() % 2 == 0) ? -1.0f : 1.0f; // -1 = up, 1 = down
     currentVelocity = (Vector2){ 0.0f, direction * _maxVelocity };
-    
+
     maxVelocity = _maxVelocity;
     gravity = _gravity;
-    
+
     printf("Ball starting with %s drop\n", direction < 0 ? "upward" : "downward");
 }
 
@@ -157,7 +160,6 @@ int Ball::hitGoal(Manager* _manager, Vector2 _position)
     return -1; // No goal
 }
 
-
 /**
  * Update ball
  */
@@ -174,99 +176,101 @@ void Ball::update(Manager* _manager, int _screenWidth, int _screenHeight, float 
     // Subtle beat-based speed boost
     float beatIntensity = _manager->getCurrentBeatIntensity();
     float speedBoost = 1.0f + beatIntensity * 0.5f; // Small 15% max boost on beats
-    
+
     // Apply gentle speed boost
     currentVelocity = Vector2Scale(currentVelocity, speedBoost);
-    
+
     // Speed clamping
     float currentSpeed = Vector2Length(currentVelocity);
     if (currentSpeed > maxVelocity * 2.0f) {
         currentVelocity = Vector2Scale(Vector2Normalize(currentVelocity), maxVelocity * 2.0f);
     }
-    
+
     // Emit particles based on speed and beat intensity
-    float speedRatio = currentSpeed / maxVelocity; // How fast compared to base speed
+    float speedRatio = currentSpeed / maxVelocity;                 // How fast compared to base speed
     float particleIntensity = (speedRatio - 1.0f) + beatIntensity; // Combine speed and beat
-    
+
     if (particleIntensity > 0.2f) { // Only emit when moving fast or on beats
         particles.emit(position, currentVelocity, particleIntensity);
     }
 
     // Very subtle center pull to prevent ball from getting stuck bouncing side to side
     Vector2 center = { (float)_screenWidth / 2, (float)_screenHeight / 2 };
-    
+
     // Define goal areas
     float topGoalY = _screenHeight / 2 - _manager->levelRadius + 15;
     float bottomGoalY = _screenHeight / 2 + _manager->levelRadius - 15;
-    
+
     Vector2 pullForce = { 0, 0 };
-    
+
     // Always apply a very weak pull toward the closer goal area
     float distanceToTopGoal = fabsf(position.y - topGoalY);
     float distanceToBottomGoal = fabsf(position.y - bottomGoalY);
-    
+
     if (distanceToTopGoal < distanceToBottomGoal) {
         // Pull very gently toward top goal
         pullForce.y = -gravity * 0.02f * dt;
-    } else {
+    }
+    else {
         // Pull very gently toward bottom goal
         pullForce.y = gravity * 0.02f * dt;
     }
-    
+
     // Stronger horizontal pull toward center to prevent side bouncing
     float horizontalDistance = fabsf(position.x - center.x);
     float maxDistance = _manager->levelRadius * 0.6f;
-    
+
     if (horizontalDistance > maxDistance) {
         float pullStrength = (horizontalDistance - maxDistance) / (_manager->levelRadius * 0.4f);
         pullStrength = fminf(pullStrength, 1.0f); // Cap at 1.0
         pullStrength *= gravity * 0.08f * dt;
-        
+
         if (position.x < center.x) {
             pullForce.x = pullStrength;
-        } else {
+        }
+        else {
             pullForce.x = -pullStrength;
         }
     }
-    
+
     currentVelocity = Vector2Add(currentVelocity, pullForce);
 
     // Calculate new position
     Vector2 positionDelta = { currentVelocity.x * dt, currentVelocity.y * dt };
     Vector2 newPosition = Vector2Add(position, positionDelta);
-    
+
     // Check for circular boundary collision and bounce
     Vector2 circleCenter = { float(_manager->screenWidth / 2), float(_manager->screenHeight / 2) };
     float circleRadius = _manager->levelRadius;
-    
+
     Vector2 toCenter = Vector2Subtract(newPosition, circleCenter);
     float distanceToCenter = Vector2Length(toCenter);
-    
+
     if (distanceToCenter > circleRadius) {
         // Ball hit the circular boundary simple reflection
         Vector2 normal = Vector2Normalize(toCenter);
         Vector2 contactPoint = Vector2Add(circleCenter, Vector2Scale(normal, circleRadius));
-        
+
         // Move ball to contact point
         newPosition = contactPoint;
-        
+
         currentVelocity = Vector2Reflect(currentVelocity, normal);
-        
+
         // Add randomness to break perfect bouncing patterns
         float randomAngle = (rand() / (float)RAND_MAX - 0.5f) * 0.3f;
         float currentAngle = atan2f(currentVelocity.y, currentVelocity.x);
         float newAngle = currentAngle + randomAngle;
         float speed = Vector2Length(currentVelocity);
-        
+
         currentVelocity = (Vector2){
             cosf(newAngle) * speed * 0.95f,
             sinf(newAngle) * speed * 0.95f
         };
-        
+
         // Reset paddle hit tracking since ball hit boundary
         _manager->onNonPaddleHit();
     }
-    
+
     position = newPosition;
 
     // Update particle system
@@ -323,17 +327,17 @@ void Ball::handleCollisions(Manager* _manager)
             float speed = Vector2Length(currentVelocity);
             float bounceMultiplier = 1.3f; // Increase speed when hit by paddle
             float newSpeed = speed * bounceMultiplier;
-            
+
             // Cap the speed
             float maxBounceSpeed = maxVelocity * 2.0f;
             newSpeed = fminf(newSpeed, maxBounceSpeed);
-            
+
             currentVelocity.x = cosf(collisionAngle) * newSpeed;
             currentVelocity.y = sinf(collisionAngle) * newSpeed;
-            
+
             // Trigger multiplier system for this player
             _manager->onPlayerHitBall(playerIndex);
-            
+
             // Play paddle hit sound
             _manager->onPaddleHit();
         }
@@ -344,7 +348,7 @@ void Ball::draw()
 {
     // Draw particles first (behind ball)
     particles.draw();
-    
+
     DrawCircle(position.x, position.y, outputDims.x, WHITE);
     // DrawRectangleLines(position.x - origin.x, position.y - origin.y, hitboxDims.x, hitboxDims.y, RED);
 }
