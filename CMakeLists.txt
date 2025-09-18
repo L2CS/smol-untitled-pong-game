@@ -1,5 +1,10 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.5)
 project(pong)
+
+# Set ARM64 architecture for Apple Silicon
+if(APPLE)
+    set(CMAKE_OSX_ARCHITECTURES arm64)
+endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 20)
@@ -11,9 +16,14 @@ set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)
 # Add your libraries and include directories
 add_subdirectory(thirdparty/raylib)
 
+# Find FFTW3 installed via Homebrew
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(FFTW3 REQUIRED fftw3)
+
 include_directories(
     thirdparty
     thirdparty/raylib/src
+    ${FFTW3_INCLUDE_DIRS}
     src
 )
 
@@ -27,11 +37,14 @@ add_executable(${PROJECT_NAME} src/main.cpp)
 target_include_directories(${PROJECT_NAME_LIB} PRIVATE
     thirdparty
     thirdparty/raylib/src
+    ${FFTW3_INCLUDE_DIRS}
 )
 
 target_link_libraries(${PROJECT_NAME}
     ${PROJECT_NAME_LIB}
     raylib
+    ${FFTW3_LIBRARIES}
+    m  # Math library
 #    -static-libstdc  # Statically link libstdc++
 )
 

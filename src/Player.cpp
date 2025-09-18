@@ -23,6 +23,10 @@ Player::Player(Texture2D _spriteSheet, Vector2 _src, Vector2 _textureDims, Vecto
     hp = _hp;
     binds = _binds;
     angularVelocity = 0.0f; // Initialize angular velocity
+    
+    // Initialize AI control
+    aiController = nullptr;
+    isAIControlled = false;
 }
 
 /**
@@ -55,20 +59,52 @@ void Player::update(Manager* _manager, int _screenWidth, int _screenHeight, floa
     float currentAngle = atan2f(toPlayer.y, toPlayer.x);
     
     // Use the member variable for angular velocity
-    bool engineOn = std::any_of(binds.LEFT.begin(), binds.LEFT.end(), [](int v) { return IsKeyDown(v); }) || 
-                    std::any_of(binds.RIGHT.begin(), binds.RIGHT.end(), [](int v) { return IsKeyDown(v); });
-
+    // Determine input source (human or AI)
+    bool leftPressed = false;
+    bool rightPressed = false;
+    
+    if (isAIControlled && aiController) {
+        // Get AI input
+        std::shared_ptr<Ball> ball = nullptr;
+        // Find the ball in the manager's entities
+        for (auto& entity : _manager->_entities) {
+            if (entity.second->type == EntityType::BALL) {
+                ball = std::static_pointer_cast<Ball>(entity.second);
+                break;
+            }
+        }
+        
+        if (ball) {
+            int aiInput = aiController->update(_manager, std::static_pointer_cast<Player>(shared_from_this()), ball, dt / 1000.0f);
+            leftPressed = (aiInput == -1);
+            rightPressed = (aiInput == 1);
+        }
+    } else {
+        // Get human input
+        leftPressed = std::any_of(binds.LEFT.begin(), binds.LEFT.end(), [](int v) { return IsKeyDown(v); });
+        rightPressed = std::any_of(binds.RIGHT.begin(), binds.RIGHT.end(), [](int v) { return IsKeyDown(v); });
+    }
+    
+    bool engineOn = leftPressed || rightPressed;
     float engineForce = engineOn ? force : 0;
-
     float resultantForce = engineForce - (frictionCoeff * normal);
     
-    float forceMultiplier = 10.0f;
+    // Get current multiplier for speed boost
+    float currentMultiplier = 1.0f;
+    if (playerIndex >= 0 && playerIndex < _manager->playerMultipliers.size()) {
+        currentMultiplier = _manager->playerMultipliers[playerIndex];
+    }
+    
+    // Scale movement speed based on multiplier (1x = normal, 3x = 50% faster)
+    float speedBonus = 1.0f + (currentMultiplier - 1.0f) * 0.25f; // 25% speed increase per multiplier level
+    
+    float forceMultiplier = 10.0f * speedBonus;
     float directionMultiplier = (playerIndex == 0) ? 1.0f : -1.0f;
     
-    if (std::any_of(binds.RIGHT.begin(), binds.RIGHT.end(), [](int v) { return IsKeyDown(v); })) {
+    if (rightPressed) {
         angularVelocity -= (resultantForce * forceMultiplier * dt * directionMultiplier) / radius;
     }
-    if (std::any_of(binds.LEFT.begin(), binds.LEFT.end(), [](int v) { return IsKeyDown(v); })) {
+    if (leftPressed) {
         angularVelocity += (resultantForce * forceMultiplier * dt * directionMultiplier) / radius;
     }
 
@@ -139,4 +175,32 @@ void Player::draw()
     Vector2 origin = { (float)outputDims.x / 2, (float)outputDims.y / 2 };
     DrawTexturePro(spriteSheet, srcRec, destRec, origin, rotation, WHITE);
     // DrawRectangleLines(position.x - origin.x, position.y - origin.y, hitboxDims.x, hitboxDims.y, RED);
+}
+
+void Player::enableAI(AIController::Difficulty difficulty)
+{
+    // Find player index by checking manager's player list
+    int playerIndex = -1;
+    // This will be set by the manager when enabling AI
+    
+    aiController = std::make_unique<AIController>(playerIndex, difficulty);
+    isAIControlled = true;
+    
+    printf("AI enabled for player with difficulty: %d\n", (int)difficulty);
+}
+
+void Player::disableAI()
+{
+    aiController.reset();
+    isAIControlled = false;
+    
+    printf("AI disabled for player\n");
+}
+
+void Player::setAIDifficulty(AIController::Difficulty difficulty)
+{
+    if (aiController) {
+        aiController->setDifficulty(difficulty);
+        printf("AI difficulty set to: %d\n", (int)difficulty);
+    }
 }

@@ -1,8 +1,10 @@
 #pragma once
 
 #include "Entity.h"
+#include "AIController.h"
 
 #include <vector>
+#include <memory>
 
 struct Manager; // Forward declaration of Manager
 
@@ -25,9 +27,18 @@ struct Player : Entity {
     float hp;                // Health points
     Keybinds binds;          // Keybinds
     float angularVelocity;   // Angular velocity for circular movement
+    
+    // AI control
+    std::unique_ptr<AIController> aiController;
+    bool isAIControlled;
 
     Player(Texture2D _spriteSheet, Vector2 _src, Vector2 _textureDims, Vector2 _position, Vector2 _outputDims, Vector2 _hitboxDims, float _maxVelocity, float _force, float _frictionCoeff, float _normal, float _hp, Keybinds _binds);
     bool outOfBounds(Manager* _manager, Vector2 _position, int playerIndex);
     void update(Manager* _manager, int _screenWidth, int _screenHeight, float dt, int playerIndex);
     void draw();
+    
+    // AI control methods
+    void enableAI(AIController::Difficulty difficulty = AIController::MEDIUM);
+    void disableAI();
+    void setAIDifficulty(AIController::Difficulty difficulty);
 };

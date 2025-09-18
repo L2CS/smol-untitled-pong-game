@@ -3,31 +3,74 @@
 #include "raylib.h"
 
 #include <memory>
+#include <cstring>
 
 int main(int argc, char* argv[])
 {
     // Parse command line arguments
     const char* musicFile = "./backgorund.wav"; // Default music file
     const char* backgroundImage = "./bg.png"; // Default background (supports .png, .jpg, .bmp, etc.)
+    const char* osuFile = nullptr; // Optional osu! beatmap file
+    bool enableAI = false;
+    int aiDifficulty = 1; // 0=Easy, 1=Medium, 2=Hard
+    int aiPlayer = 1; // Which player to make AI (0 or 1)
     
-    if (argc >= 2) {
-        musicFile = argv[1];
-        printf("Using music file: %s\n", musicFile);
-    }
-    
-    if (argc >= 3) {
-        backgroundImage = argv[2];
-        printf("Using background image: %s\n", backgroundImage);
+    // Parse arguments
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--ai") == 0 || strcmp(argv[i], "-ai") == 0) {
+            enableAI = true;
+            // Check for difficulty parameter
+            if (i + 1 < argc && argv[i + 1][0] != '-') {
+                i++;
+                if (strcmp(argv[i], "easy") == 0) aiDifficulty = 0;
+                else if (strcmp(argv[i], "medium") == 0) aiDifficulty = 1;
+                else if (strcmp(argv[i], "hard") == 0) aiDifficulty = 2;
+                else {
+                    printf("Invalid AI difficulty: %s (using medium)\n", argv[i]);
+                    aiDifficulty = 1;
+                }
+            }
+        } else if (strcmp(argv[i], "--ai-player") == 0) {
+            if (i + 1 < argc) {
+                i++;
+                aiPlayer = atoi(argv[i]);
+                if (aiPlayer < 0 || aiPlayer > 1) {
+                    printf("Invalid AI player index: %d (using 1)\n", aiPlayer);
+                    aiPlayer = 1;
+                }
+            }
+        } else if (i == 1) {
+            musicFile = argv[i];
+        } else if (i == 2) {
+            backgroundImage = argv[i];
+        } else if (i == 3) {
+            osuFile = argv[i];
+        }
     }
     
     if (argc == 1) {
-        printf("Usage: %s [music_file] [background_image]\n", argv[0]);
-        printf("Supported formats:\n");
+        printf("Usage: %s [music_file] [background_image] [osu_beatmap] [options]\n", argv[0]);
+        printf("Options:\n");
+        printf("  --ai [easy|medium|hard]  Enable AI opponent (default: medium)\n");
+        printf("  --ai-player [0|1]        Which player to make AI (default: 1)\n");
+        printf("\nSupported formats:\n");
         printf("  Music: .wav files (for FFT analysis)\n");
         printf("  Background: .png, .jpg, .jpeg, .bmp, .tga files\n");
-        printf("Using default files:\n");
-        printf("  Music: %s\n", musicFile);
-        printf("  Background: %s\n", backgroundImage);
+        printf("  Beatmap: .osu files (for score multiplier system)\n");
+        printf("\nExamples:\n");
+        printf("  %s song.wav bg.png map.osu --ai hard\n", argv[0]);
+        printf("  %s song.wav bg.png --ai easy --ai-player 0\n", argv[0]);
+    }
+    
+    printf("Configuration:\n");
+    printf("  Music: %s\n", musicFile);
+    printf("  Background: %s\n", backgroundImage);
+    printf("  Beatmap: %s\n", osuFile ? osuFile : "None (default scoring)");
+    if (enableAI) {
+        const char* diffNames[] = {"Easy", "Medium", "Hard"};
+        printf("  AI: Player %d - %s\n", aiPlayer + 1, diffNames[aiDifficulty]);
+    } else {
+        printf("  AI: Disabled (human vs human)\n");
     }
     
     // Start with a reasonable window size, then go fullscreen
@@ -94,7 +137,8 @@ int main(int argc, char* argv[])
         offset,
         boundaryWidth,
         backgroundTexture,
-        musicFile);
+        musicFile,
+        osuFile);
 
     // Start background music using macOS system command with reduced volume
     char musicCommand[512];
@@ -109,21 +153,44 @@ int main(int argc, char* argv[])
     bool musicLoaded = true; // We're using system audio
     
     // TODO: Let the user set binds in the game menu :)
-    std::vector<int> left{ KEY_LEFT };
-    std::vector<int> right{ KEY_RIGHT };
-    Keybinds p1Binds = { left, right };
+    // Set up keybinds based on AI configuration
+    Keybinds p1Binds, p2Binds;
+    
+    if (enableAI) {
+        if (aiPlayer == 0) {
+            // AI is Player 1, human is Player 2 - give human both key sets
+            std::vector<int> humanLeft{ KEY_LEFT, KEY_A };
+            std::vector<int> humanRight{ KEY_RIGHT, KEY_D };
+            p1Binds = { {}, {} }; // AI doesn't need keys
+            p2Binds = { humanLeft, humanRight };
+            printf("Human player (P2) controls: Arrow Keys + A/D Keys\n");
+        } else {
+            // AI is Player 2, human is Player 1 - give human both key sets  
+            std::vector<int> humanLeft{ KEY_LEFT, KEY_A };
+            std::vector<int> humanRight{ KEY_RIGHT, KEY_D };
+            p1Binds = { humanLeft, humanRight };
+            p2Binds = { {}, {} }; // AI doesn't need keys
+            printf("Human player (P1) controls: Arrow Keys + A/D Keys\n");
+        }
+    } else {
+        // Human vs Human - separate key sets
+        std::vector<int> left1{ KEY_LEFT };
+        std::vector<int> right1{ KEY_RIGHT };
+        p1Binds = { left1, right1 };
 
-    std::vector<int> left2{ KEY_A };
-    std::vector<int> right2{ KEY_D };
-    Keybinds p2Binds = { left2, right2 };
+        std::vector<int> left2{ KEY_A };
+        std::vector<int> right2{ KEY_D };
+        p2Binds = { left2, right2 };
+        printf("Player 1 controls: Arrow Keys, Player 2 controls: A/D Keys\n");
+    }
 
     std::shared_ptr<Player> p1 = std::make_shared<Player>(
         playerSprite,
         (Vector2){ 3.0f, 11.0f },
         (Vector2){ 32.0f, 32.0f },
         (Vector2){ (float)screenWidth / 2, (float)(screenHeight / 1.5) },
-        (Vector2){ 50.0f, 16.0f },
-        (Vector2){ 25.0f, 8.0f },
+        (Vector2){ 65.0f, 20.0f }, // Increased from 50x16 to 65x20
+        (Vector2){ 32.0f, 10.0f }, // Increased hitbox proportionally
         0.5f,
         0.05f,
         0.0001f,
@@ -136,8 +203,8 @@ int main(int argc, char* argv[])
         (Vector2){ 3.0f, 11.0f },
         (Vector2){ 32.0f, 32.0f },
         (Vector2){ (float)screenWidth / 2, (float)(screenHeight / 4) },
-        (Vector2){ 50.0f, 16.0f },
-        (Vector2){ 25.0f, 8.0f },
+        (Vector2){ 65.0f, 20.0f }, // Increased from 50x16 to 65x20
+        (Vector2){ 32.0f, 10.0f }, // Increased hitbox proportionally
         0.5f,
         0.05f,
         0.0001f,
@@ -158,6 +225,12 @@ int main(int argc, char* argv[])
 
     mgr->addPlayer(p1);
     mgr->addPlayer(p2);
+    
+    // Enable AI if requested
+    if (enableAI) {
+        AIController::Difficulty difficulty = static_cast<AIController::Difficulty>(aiDifficulty);
+        mgr->enableAI(aiPlayer, difficulty);
+    }
 
     // Define a target frame rate and calculate the frame time
     const int targetFPS = 60;
@@ -167,9 +240,14 @@ int main(int argc, char* argv[])
     float accumulatedTime = 0.0f;
     double currentTime = GetTime();
 
-    // Main game loop - run until window closes
+    // Main game loop - run until window closes or game ends with ESC
     while (!WindowShouldClose())
     {
+        // Check if game ended and ESC is pressed
+        if (mgr->isGameEnded() && IsKeyPressed(KEY_ESCAPE)) {
+            break; // Exit game loop
+        }
+        
         // No need to update music stream - system handles it
         
         // Calculate elapsed time since last frame

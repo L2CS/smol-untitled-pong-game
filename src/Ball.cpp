@@ -8,6 +8,76 @@
 #include <memory>
 #include <vector>
 
+// Particle system implementation
+void ParticleSystem::update(float dt)
+{
+    // Update existing particles
+    for (auto it = particles.begin(); it != particles.end();) {
+        it->life -= dt;
+        if (it->life <= 0) {
+            it = particles.erase(it);
+        } else {
+            // Update particle position
+            it->position.x += it->velocity.x * dt;
+            it->position.y += it->velocity.y * dt;
+            
+            // Fade out over time
+            float alpha = it->life / it->maxLife;
+            it->color.a = (unsigned char)(255 * alpha);
+            
+            // Shrink over time
+            it->size *= 0.98f;
+            
+            ++it;
+        }
+    }
+}
+
+void ParticleSystem::draw()
+{
+    for (const auto& particle : particles) {
+        DrawCircleV(particle.position, particle.size, particle.color);
+    }
+}
+
+void ParticleSystem::emit(Vector2 position, Vector2 velocity, float intensity)
+{
+    // Don't exceed max particles
+    if (particles.size() >= MAX_PARTICLES) return;
+    
+    // Create new particle
+    Particle p;
+    p.position = position;
+    
+    // Random velocity based on ball velocity and intensity
+    float angle = (rand() / (float)RAND_MAX) * 2 * M_PI;
+    float speed = intensity * 50.0f + (rand() / (float)RAND_MAX) * 30.0f;
+    
+    p.velocity.x = cosf(angle) * speed - velocity.x * 0.3f; // Trail behind ball
+    p.velocity.y = sinf(angle) * speed - velocity.y * 0.3f;
+    
+    p.life = 0.3f + (rand() / (float)RAND_MAX) * 0.4f; // 0.3-0.7 seconds
+    p.maxLife = p.life;
+    
+    // Color based on intensity - blue to white to yellow
+    if (intensity < 0.5f) {
+        p.color = (Color){100, 150, 255, 255}; // Blue
+    } else if (intensity < 1.0f) {
+        p.color = (Color){200, 200, 255, 255}; // Light blue/white
+    } else {
+        p.color = (Color){255, 255, 150, 255}; // Yellow/white
+    }
+    
+    p.size = 2.0f + intensity * 3.0f; // Size based on intensity
+    
+    particles.push_back(p);
+}
+
+void ParticleSystem::clear()
+{
+    particles.clear();
+}
+
 /**
  * Collision check for circle and polygon
  */
@@ -103,7 +173,7 @@ void Ball::update(Manager* _manager, int _screenWidth, int _screenHeight, float 
 
     // Subtle beat-based speed boost
     float beatIntensity = _manager->getCurrentBeatIntensity();
-    float speedBoost = 1.0f + beatIntensity * 0.15f; // Small 15% max boost on beats
+    float speedBoost = 1.0f + beatIntensity * 0.5f; // Small 15% max boost on beats
     
     // Apply gentle speed boost
     currentVelocity = Vector2Scale(currentVelocity, speedBoost);
@@ -112,6 +182,14 @@ void Ball::update(Manager* _manager, int _screenWidth, int _screenHeight, float 
     float currentSpeed = Vector2Length(currentVelocity);
     if (currentSpeed > maxVelocity * 2.0f) {
         currentVelocity = Vector2Scale(Vector2Normalize(currentVelocity), maxVelocity * 2.0f);
+    }
+    
+    // Emit particles based on speed and beat intensity
+    float speedRatio = currentSpeed / maxVelocity; // How fast compared to base speed
+    float particleIntensity = (speedRatio - 1.0f) + beatIntensity; // Combine speed and beat
+    
+    if (particleIntensity > 0.2f) { // Only emit when moving fast or on beats
+        particles.emit(position, currentVelocity, particleIntensity);
     }
 
     // Very subtle center pull to prevent ball from getting stuck bouncing side to side
@@ -184,9 +262,15 @@ void Ball::update(Manager* _manager, int _screenWidth, int _screenHeight, float 
             cosf(newAngle) * speed * 0.95f,
             sinf(newAngle) * speed * 0.95f
         };
+        
+        // Reset paddle hit tracking since ball hit boundary
+        _manager->onNonPaddleHit();
     }
     
     position = newPosition;
+
+    // Update particle system
+    particles.update(dt / 1000.0f); // Convert ms to seconds
 
     // Call handleCollisions for the ball to handle collisions
     handleCollisions(_manager);
@@ -212,7 +296,8 @@ void Ball::handleCollisions(Manager* _manager)
     };
 
     // Iterate through players and check collisions
-    for (auto player : _manager->players) {
+    for (int playerIndex = 0; playerIndex < _manager->players.size(); playerIndex++) {
+        auto player = _manager->players[playerIndex];
         Vector2 polyPoints[8];
         float rotationAngle = player->rotation * (float)M_PI / 180.0f;
 
@@ -235,6 +320,7 @@ void Ball::handleCollisions(Manager* _manager)
             float collisionAngle = atan2f(relativeY, relativeX);
 
             // Calculate the new velocity based on the angle
+            float speed = Vector2Length(currentVelocity);
             float bounceMultiplier = 1.3f; // Increase speed when hit by paddle
             float newSpeed = speed * bounceMultiplier;
             
@@ -245,14 +331,20 @@ void Ball::handleCollisions(Manager* _manager)
             currentVelocity.x = cosf(collisionAngle) * newSpeed;
             currentVelocity.y = sinf(collisionAngle) * newSpeed;
             
-            // Play hit sound
-            // _manager->playHitSound();
+            // Trigger multiplier system for this player
+            _manager->onPlayerHitBall(playerIndex);
+            
+            // Play paddle hit sound
+            _manager->onPaddleHit();
         }
     }
 }
 
 void Ball::draw()
 {
+    // Draw particles first (behind ball)
+    particles.draw();
+    
     DrawCircle(position.x, position.y, outputDims.x, WHITE);
     // DrawRectangleLines(position.x - origin.x, position.y - origin.y, hitboxDims.x, hitboxDims.y, RED);
 }
