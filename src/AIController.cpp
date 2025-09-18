@@ -22,24 +22,24 @@ void AIController::updateDifficultyParams()
 {
     switch (currentDifficulty) {
     case EASY:
-        reactionTime = 0.15f;
-        predictionAccuracy = 0.7f;
-        maxSpeed = 0.8f;
-        trackingRange = 1.2f;
+        reactionTime = 0.20f;
+        predictionAccuracy = 0.6f;
+        maxSpeed = 0.7f;
+        trackingRange = 1.0f;
         break;
 
     case MEDIUM:
-        reactionTime = 0.08f;
-        predictionAccuracy = 0.9f;
+        reactionTime = 0.10f;
+        predictionAccuracy = 0.85f;
         maxSpeed = 1.0f;
-        trackingRange = 2.0f;
+        trackingRange = 1.8f;
         break;
 
     case HARD:
         reactionTime = 0.05f;
-        predictionAccuracy = 0.98f;
-        maxSpeed = 1.2f;
-        trackingRange = 3.0f;
+        predictionAccuracy = 0.95f;
+        maxSpeed = 1.3f;
+        trackingRange = 2.5f;
         break;
     }
 }
@@ -48,10 +48,11 @@ int AIController::update(Manager* manager, std::shared_ptr<Player> player, std::
 {
     reactionTimer += deltaTime;
 
-    // Check if ball is moving towards
+    // Check if ball is moving towards AI's goal
     ballMovingTowardsAI = isBallMovingTowardsPlayer(manager, player, ball);
 
-    float actualReactionTime = reactionTime * 0.5f;
+    // Faster reaction when defending
+    float actualReactionTime = ballMovingTowardsAI ? reactionTime * 0.3f : reactionTime * 0.7f;
 
     if (reactionTimer < actualReactionTime) {
         return getMovementDirection(manager, player, targetPosition);
@@ -60,10 +61,13 @@ int AIController::update(Manager* manager, std::shared_ptr<Player> player, std::
     reactionTimer = 0.0f;
     lastDecisionTime = 0.0f;
 
+    // Calculate where AI should be positioned
     Vector2 interceptPoint = calculateInterceptPoint(manager, player, ball);
 
-    float inaccuracy = (1.0f - predictionAccuracy) * 0.3f;
-    float randomOffset = (rand() / (float)RAND_MAX - 0.5f) * inaccuracy * 20.0f;
+    // Add some inaccuracy based on difficulty (less when defending)
+    float inaccuracy = (1.0f - predictionAccuracy) * (ballMovingTowardsAI ? 0.1f : 0.3f);
+    float randomOffset = (rand() / (float)RAND_MAX - 0.5f) * inaccuracy * 15.0f;
+
     Vector2 center = { (float)manager->screenWidth / 2, (float)manager->screenHeight / 2 };
     float radius = manager->levelRadius - manager->levelOffset;
 
@@ -114,61 +118,37 @@ Vector2 AIController::calculateInterceptPoint(Manager* manager, std::shared_ptr<
 {
     Vector2 center = { (float)manager->screenWidth / 2, (float)manager->screenHeight / 2 };
     float radius = manager->levelRadius - manager->levelOffset;
-
     Vector2 ballPos = ball->position;
     Vector2 ballVel = ball->currentVelocity;
     float ballSpeed = Vector2Length(ballVel);
 
-    // If ball is barely moving, just track its current position
-    if (ballSpeed < 50.0f) {
-        Vector2 toBall = Vector2Subtract(ballPos, center);
-        float ballAngle = atan2f(toBall.y, toBall.x);
-
-        Vector2 trackingPoint;
-        trackingPoint.x = center.x + radius * cosf(ballAngle);
-        trackingPoint.y = center.y + radius * sinf(ballAngle);
-        return trackingPoint;
-    }
-
-    float bestTime = 0;
-    Vector2 bestIntercept = ballPos;
-    float minDistance = 10000;
-
-    for (float t = 0.1f; t <= trackingRange; t += 0.1f) {
-        Vector2 predictedPos = predictBallTrajectory(ball, t);
-
+    // Simple approach: if ball is moving fast, try to intercept it
+    // Otherwise, track the ball's current position
+    if (ballSpeed > 100.0f && ballMovingTowardsAI) {
+        // Predict where ball will be
+        Vector2 predictedPos = predictBallTrajectory(ball, 0.5f);
         Vector2 toPredicted = Vector2Subtract(predictedPos, center);
         float distance = Vector2Length(toPredicted);
 
-        if (distance > 10.0f) { // Avoid division by zero
+        if (distance > 10.0f) {
             Vector2 normalized = Vector2Scale(toPredicted, 1.0f / distance);
-            Vector2 circlePoint = Vector2Add(center, Vector2Scale(normalized, radius));
-
-            // Check if this is a good intercept point
-            Vector2 playerPos = player->position;
-            float interceptDistance = Vector2Distance(playerPos, circlePoint);
-
-            if (interceptDistance < minDistance) {
-                minDistance = interceptDistance;
-                bestIntercept = circlePoint;
-                bestTime = t;
-            }
+            Vector2 interceptPoint = Vector2Add(center, Vector2Scale(normalized, radius));
+            return interceptPoint;
         }
     }
 
-    // If we found a good intercept, use it
-    if (bestTime > 0) {
-        return bestIntercept;
+    // Default: track ball's current position
+    Vector2 toBall = Vector2Subtract(ballPos, center);
+    float ballDistance = Vector2Length(toBall);
+
+    if (ballDistance > 10.0f) {
+        Vector2 normalized = Vector2Scale(toBall, 1.0f / ballDistance);
+        Vector2 trackingPoint = Vector2Add(center, Vector2Scale(normalized, radius));
+        return trackingPoint;
     }
 
-    Vector2 toBall = Vector2Subtract(ballPos, center);
-    float ballAngle = atan2f(toBall.y, toBall.x);
-
-    Vector2 fallbackPoint;
-    fallbackPoint.x = center.x + radius * cosf(ballAngle);
-    fallbackPoint.y = center.y + radius * sinf(ballAngle);
-
-    return fallbackPoint;
+    // Fallback: stay at current position
+    return player->position;
 }
 
 bool AIController::isBallMovingTowardsPlayer(Manager* manager, std::shared_ptr<Player> player, std::shared_ptr<Ball> ball)
@@ -176,7 +156,8 @@ bool AIController::isBallMovingTowardsPlayer(Manager* manager, std::shared_ptr<P
     Vector2 ballVel = ball->currentVelocity;
     float ballSpeed = Vector2Length(ballVel);
 
-    return ballSpeed > 10.0f;
+    // Simple check: if ball is moving fast enough, consider it a threat
+    return ballSpeed > 50.0f;
 }
 
 float AIController::getAngleToTarget(Manager* manager, std::shared_ptr<Player> player, Vector2 target)
@@ -202,13 +183,16 @@ int AIController::getMovementDirection(Manager* manager, std::shared_ptr<Player>
 {
     float angleToTarget = getAngleToTarget(manager, player, target);
 
-    float threshold = 0.01f;
+    // Increase threshold to make AI more responsive
+    float threshold = 0.05f;
 
     if (fabsf(angleToTarget) < threshold) {
         return 0;
     }
 
-    float speedMultiplier = maxSpeed;
+    // Debug output (remove later)
+    printf("AI Player %d: angleToTarget=%.3f, target=(%.1f,%.1f)\n",
+           aiPlayerIndex, angleToTarget, target.x, target.y);
 
     if (aiPlayerIndex == 0) {
         return (angleToTarget > 0) ? 1 : -1;
