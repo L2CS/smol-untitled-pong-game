@@ -5,6 +5,7 @@
 /build
 /install
 /temp
+/data
 
 # CMake
 /cmake-build-debug
@@ -31,7 +32,7 @@ CMakeCache.txt
 # Fortran module files
 *.mod
 *.smod
-
+.cache/
 # Compiled Static libraries
 *.lai
 *.la

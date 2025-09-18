@@ -44,27 +44,23 @@ bool CheckCollisionCirclePolygon(Vector2 circleCenter, float circleRadius, Vecto
     return false; // No collision detected
 }
 
-Ball::Ball(Vector2 _position, Vector2 _outputDims, Vector2 _hitboxDims, float _maxVelocity)
+Ball::Ball(Vector2 _position, Vector2 _outputDims, Vector2 _hitboxDims, float _maxVelocity, float _gravity)
     : Entity(_position, _outputDims, _hitboxDims, EntityType::BALL)
 {
-    currentVelocity = { 0, 0 };
-    float upDown = static_cast<float>(rand()) / RAND_MAX;
-
-    currentVelocity = Vector2{ static_cast<float>(rand()) / RAND_MAX, static_cast<float>(rand()) / RAND_MAX };
-
-    currentVelocity = upDown > 0.5f ? currentVelocity : Vector2{ -currentVelocity.x, -currentVelocity.y };
-
-    float mag = Vector2Length(currentVelocity);
-    currentVelocity = Vector2Normalize(currentVelocity);
-    currentVelocity = (Vector2){ _maxVelocity * currentVelocity.x, _maxVelocity * currentVelocity.y };
-
+    // Start with straight vertical drop (randomly choose up or down)
+    float direction = (rand() % 2 == 0) ? -1.0f : 1.0f; // -1 = up, 1 = down
+    currentVelocity = (Vector2){ 0.0f, direction * _maxVelocity };
+    
     maxVelocity = _maxVelocity;
+    gravity = _gravity;
+    
+    printf("Ball starting with %s drop\n", direction < 0 ? "upward" : "downward");
 }
 
 /**
  * Hitting goal check
  */
-bool Ball::hitGoal(Manager* _manager, Vector2 _position)
+int Ball::hitGoal(Manager* _manager, Vector2 _position)
 {
     // TODO: Is there a faster way to do this???
     for (int i = 0; i < _manager->numGoalPoints - 1; i++) {
@@ -78,64 +74,119 @@ bool Ball::hitGoal(Manager* _manager, Vector2 _position)
         Vector2 p4 = bottomPoints[i + 1];
 
         if (CheckCollisionPointLine(_position, p1, p2, 2.0f)) {
-            std::cout << "GOOOAALLLLLL!!!!!" << std::endl;
-            return true;
+            std::cout << "GOOOAALLLLLL!!!!! Player 2 scored!" << std::endl;
+            return 1; // Player 2 scored (return the scoring player)
         }
 
         if (CheckCollisionPointLine(_position, p3, p4, 2.0f)) {
-            std::cout << "GOOOAALLLLLL!!!!!" << std::endl;
-            return true;
+            std::cout << "GOOOAALLLLLL!!!!! Player 1 scored!" << std::endl;
+            return 0; // Player 1 scored (return the scoring player)
         }
     }
 
-    return false;
+    return -1; // No goal
 }
 
-/**
- * Out-of-bounds check
- */
-bool Ball::outOfBounds(Manager* _manager)
-{
-    if (CheckCollisionPointCircle({ position.x, position.y }, { float(_manager->screenWidth / 2), float(_manager->screenHeight / 2) }, 300.0f)) {
-        return false;
-    }
-    else {
-        Vector2 circleCenter = { float(_manager->screenWidth / 2), float(_manager->screenHeight / 2) };
-        double circleRadius = 300.0;
-
-        // Calculate the vector from the ball's position to the circle's center
-        Vector2 toCenter = Vector2Subtract(circleCenter, position);
-
-        // Calculate the normalised vector representing the inside of the circle
-        Vector2 insideNormal = Vector2Normalize(toCenter);
-
-        // Calculate the reflection of the current velocity inside the circle
-        currentVelocity = Vector2Reflect(currentVelocity, insideNormal);
-    }
-
-    return true;
-}
 
 /**
  * Update ball
  */
 void Ball::update(Manager* _manager, int _screenWidth, int _screenHeight, float dt)
 {
-    Vector2 oldPosition = position;
-
-    if (hitGoal(_manager, position)) {
+    // Check for goals at current position
+    int scoringPlayer = hitGoal(_manager, position);
+    if (scoringPlayer != -1) {
+        _manager->scoreGoal(scoringPlayer);
         position = (Vector2){ (float)(_manager->screenWidth / 2), (float)(_manager->screenHeight / 2) };
+        return; // Reset ball position and exit early
     }
 
-    if (outOfBounds(_manager)) {
-        position = oldPosition;
+    // Subtle beat-based speed boost
+    float beatIntensity = _manager->getCurrentBeatIntensity();
+    float speedBoost = 1.0f + beatIntensity * 0.15f; // Small 15% max boost on beats
+    
+    // Apply gentle speed boost
+    currentVelocity = Vector2Scale(currentVelocity, speedBoost);
+    
+    // Speed clamping
+    float currentSpeed = Vector2Length(currentVelocity);
+    if (currentSpeed > maxVelocity * 2.0f) {
+        currentVelocity = Vector2Scale(Vector2Normalize(currentVelocity), maxVelocity * 2.0f);
     }
 
-    Vector2 resultantVelocity = currentVelocity;
-    Vector2 positionDelta = { resultantVelocity.x * dt, resultantVelocity.y * dt };
-    position = Vector2Add(position, positionDelta);
+    // Very subtle center pull to prevent ball from getting stuck bouncing side to side
+    Vector2 center = { (float)_screenWidth / 2, (float)_screenHeight / 2 };
+    
+    // Define goal areas
+    float topGoalY = _screenHeight / 2 - _manager->levelRadius + 15;
+    float bottomGoalY = _screenHeight / 2 + _manager->levelRadius - 15;
+    
+    Vector2 pullForce = { 0, 0 };
+    
+    // Always apply a very weak pull toward the closer goal area
+    float distanceToTopGoal = fabsf(position.y - topGoalY);
+    float distanceToBottomGoal = fabsf(position.y - bottomGoalY);
+    
+    if (distanceToTopGoal < distanceToBottomGoal) {
+        // Pull very gently toward top goal
+        pullForce.y = -gravity * 0.02f * dt;
+    } else {
+        // Pull very gently toward bottom goal
+        pullForce.y = gravity * 0.02f * dt;
+    }
+    
+    // Stronger horizontal pull toward center to prevent side bouncing
+    float horizontalDistance = fabsf(position.x - center.x);
+    float maxDistance = _manager->levelRadius * 0.6f;
+    
+    if (horizontalDistance > maxDistance) {
+        float pullStrength = (horizontalDistance - maxDistance) / (_manager->levelRadius * 0.4f);
+        pullStrength = fminf(pullStrength, 1.0f); // Cap at 1.0
+        pullStrength *= gravity * 0.08f * dt;
+        
+        if (position.x < center.x) {
+            pullForce.x = pullStrength;
+        } else {
+            pullForce.x = -pullStrength;
+        }
+    }
+    
+    currentVelocity = Vector2Add(currentVelocity, pullForce);
 
-    currentVelocity = resultantVelocity;
+    // Calculate new position
+    Vector2 positionDelta = { currentVelocity.x * dt, currentVelocity.y * dt };
+    Vector2 newPosition = Vector2Add(position, positionDelta);
+    
+    // Check for circular boundary collision and bounce
+    Vector2 circleCenter = { float(_manager->screenWidth / 2), float(_manager->screenHeight / 2) };
+    float circleRadius = _manager->levelRadius;
+    
+    Vector2 toCenter = Vector2Subtract(newPosition, circleCenter);
+    float distanceToCenter = Vector2Length(toCenter);
+    
+    if (distanceToCenter > circleRadius) {
+        // Ball hit the circular boundary simple reflection
+        Vector2 normal = Vector2Normalize(toCenter);
+        Vector2 contactPoint = Vector2Add(circleCenter, Vector2Scale(normal, circleRadius));
+        
+        // Move ball to contact point
+        newPosition = contactPoint;
+        
+        currentVelocity = Vector2Reflect(currentVelocity, normal);
+        
+        // Add randomness to break perfect bouncing patterns
+        float randomAngle = (rand() / (float)RAND_MAX - 0.5f) * 0.3f;
+        float currentAngle = atan2f(currentVelocity.y, currentVelocity.x);
+        float newAngle = currentAngle + randomAngle;
+        float speed = Vector2Length(currentVelocity);
+        
+        currentVelocity = (Vector2){
+            cosf(newAngle) * speed * 0.95f,
+            sinf(newAngle) * speed * 0.95f
+        };
+    }
+    
+    position = newPosition;
 
     // Call handleCollisions for the ball to handle collisions
     handleCollisions(_manager);
@@ -184,9 +235,18 @@ void Ball::handleCollisions(Manager* _manager)
             float collisionAngle = atan2f(relativeY, relativeX);
 
             // Calculate the new velocity based on the angle
-            float speed = Vector2Length(currentVelocity);
-            currentVelocity.x = cosf(collisionAngle) * speed;
-            currentVelocity.y = sinf(collisionAngle) * speed;
+            float bounceMultiplier = 1.3f; // Increase speed when hit by paddle
+            float newSpeed = speed * bounceMultiplier;
+            
+            // Cap the speed
+            float maxBounceSpeed = maxVelocity * 2.0f;
+            newSpeed = fminf(newSpeed, maxBounceSpeed);
+            
+            currentVelocity.x = cosf(collisionAngle) * newSpeed;
+            currentVelocity.y = sinf(collisionAngle) * newSpeed;
+            
+            // Play hit sound
+            // _manager->playHitSound();
         }
     }
 }
