@@ -8,15 +8,6 @@
 // Forward declaration to avoid circular dependency
 struct TimingPoint;
 
-/**
- * MusicManager - Handles all music playback, audio analysis, and sound effects
- * 
- * This class provides:
- * - Audio file loading and playback timing
- * - Real-time FFT analysis for visualization
- * - Beat detection and intensity calculation
- * - Sound effect management
- */
 class MusicManager {
 public:
     // Audio processing constants
@@ -83,7 +74,6 @@ private:
     float currentBeatIntensity;
     float lastBeatTime;
     
-    // Sound effects (using afplay)
     bool soundsLoaded;
     
     // Hit tracking for consecutive hits

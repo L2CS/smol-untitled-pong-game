@@ -1,11 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 project(pong)
 
-# Set ARM64 architecture for Apple Silicon
-if(APPLE)
-    set(CMAKE_OSX_ARCHITECTURES arm64)
-endif()
-
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

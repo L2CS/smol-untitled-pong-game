@@ -26,11 +26,11 @@ void Visualizer::update(const MusicManager& musicManager)
     
     // Map FFT magnitudes to visualizer bars
     for (int i = 0; i < VISUALIZER_BARS; i++) {
-        // Map frequency bins to bars (logarithmic scaling for better visualization)
-        float freqStart = powf(2.0f, (float)i / VISUALIZER_BARS * 10.0f); // 1 Hz to ~1024 Hz
+        // Map frequency bins to bars
+        float freqStart = powf(2.0f, (float)i / VISUALIZER_BARS * 10.0f); 
         float freqEnd = powf(2.0f, (float)(i + 1) / VISUALIZER_BARS * 10.0f);
         
-        // Convert frequency to FFT bin indices (using MusicManager constants)
+        // Convert frequency to FFT bin indices 
         int binStart = (int)(freqStart * MusicManager::FFT_SIZE / MusicManager::SAMPLE_RATE);
         int binEnd = (int)(freqEnd * MusicManager::FFT_SIZE / MusicManager::SAMPLE_RATE);
         
@@ -47,22 +47,21 @@ void Visualizer::update(const MusicManager& musicManager)
             avgMagnitude /= (binEnd - binStart);
         }
         
-        // Scale and apply to visualizer - increased for more dramatic effect
+        // Scale and apply to visualizer 
         float targetHeight = avgMagnitude * 200.0f; // Doubled scale factor
         
-        // Apply logarithmic scaling for better visual range - increased multiplier
+        // Apply logarithmic scaling for better visual range
         targetHeight = logf(1.0f + targetHeight) * 25.0f;
         
         visualizerTargets[i] = targetHeight;
         
         // Smooth interpolation towards target
         float diff = visualizerTargets[i] - visualizerBars[i];
-        visualizerBars[i] += diff * 0.3f; // Fast response for real-time audio
+        visualizerBars[i] += diff * 0.3f; 
         
         // Decay over time
         visualizerBars[i] *= 0.85f;
         
-        // Minimum height - increased for more visible bars
         if (visualizerBars[i] < 5.0f) visualizerBars[i] = 5.0f;
     }
 }
@@ -93,16 +92,15 @@ void Visualizer::draw()
             center.y + barOuterRadius * sinf(angle)
         };
         
-        // Calculate bar width (make bars thicker for better visibility)
+        // Calculate bar width 
         float barWidth = 6.0f;
         
         // Draw the bar as a thick line with color
         Color barColor = visualizerColors[i];
-        barColor.a = (unsigned char)(255 * fminf(barHeight / 80.0f, 1.0f)); // Alpha based on height, adjusted for taller bars
+        barColor.a = (unsigned char)(255 * fminf(barHeight / 80.0f, 1.0f)); 
         
         DrawLineEx(innerPos, outerPos, barWidth, barColor);
         
-        // Add glow effect
         Color glowColor = barColor;
         glowColor.a = (unsigned char)(glowColor.a * 0.3f);
         DrawLineEx(innerPos, outerPos, barWidth * 2.0f, glowColor);
@@ -111,7 +109,7 @@ void Visualizer::draw()
 
 void Visualizer::triggerBeat(float intensity)
 {
-    // Trigger a beat effect - boost random bars
+    // Trigger a beat effect
     for (int i = 0; i < VISUALIZER_BARS; i++) {
         if (rand() % 100 < 30) { // 30% chance for each bar
             visualizerBars[i] += intensity * 20.0f;
