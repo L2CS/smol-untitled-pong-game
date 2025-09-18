@@ -109,7 +109,7 @@ void Visualizer::triggerBeat(float intensity)
 {
     // Trigger a beat effect
     for (int i = 0; i < VISUALIZER_BARS; i++) {
-        if (rand() % 100 < 30) { // 30% chance for each bar
+        if (rand() % 100 < 30) { 
             visualizerBars[i] += intensity * 20.0f;
             if (visualizerBars[i] > 80.0f) visualizerBars[i] = 80.0f;
         }

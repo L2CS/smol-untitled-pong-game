@@ -22,7 +22,7 @@ Player::Player(Texture2D _spriteSheet, Vector2 _src, Vector2 _textureDims, Vecto
     src = _src;
     hp = _hp;
     binds = _binds;
-    angularVelocity = 0.0f; // Initialize angular velocity
+    angularVelocity = 0.0f; 
 
     // Initialize AI control
     aiController = nullptr;
@@ -96,9 +96,7 @@ void Player::update(Manager* _manager, int _screenWidth, int _screenHeight, floa
         currentMultiplier = _manager->playerMultipliers[playerIndex];
     }
 
-    // Scale movement speed based on multiplier (1x = normal, 3x = 50% faster)
-    float speedBonus = 1.0f + (currentMultiplier - 1.0f) * 0.25f; // 25% speed increase per multiplier level
-
+    float speedBonus = 1.0f + (currentMultiplier - 1.0f) * 0.25f; 
     float forceMultiplier = 10.0f * speedBonus;
     float directionMultiplier = (playerIndex == 0) ? 1.0f : -1.0f;
 
@@ -160,7 +158,7 @@ void Player::update(Manager* _manager, int _screenWidth, int _screenHeight, floa
     }
     else if (angleDiff < -maxHalfRange) {
         newAngle = centerAngle - maxHalfRange;
-        angularVelocity = 0; // Stop at boundary
+        angularVelocity = 0; 
     }
 
     // Calculate new position on the circle
@@ -186,9 +184,7 @@ void Player::draw()
 
 void Player::enableAI(AIController::Difficulty difficulty)
 {
-    // Find player index by checking manager's player list
     int playerIndex = -1;
-    // This will be set by the manager when enabling AI
 
     aiController = std::make_unique<AIController>(playerIndex, difficulty);
     isAIControlled = true;

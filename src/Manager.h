@@ -5,6 +5,7 @@
 #include "MusicManager.h"
 #include "OsuParser.h"
 #include "Player.h"
+#include "VideoManager.h"
 #include "Visualizer.h"
 
 #include "raymath.h"
@@ -56,9 +57,12 @@ public:
     // Modular components
     MusicManager musicManager;
     Visualizer visualizer;
+    VideoManager videoManager;
 
     // Background and game state
     Texture2D backgroundTexture;
+    bool useVideoBackground;
+    bool enableVideoSync;
     float gameStartTime;
     bool gameEnded;
     int winner; // 0 = Player 1, 1 = Player 2, -1 = tie
@@ -67,7 +71,7 @@ public:
     // std::vector<Powerup*> powerupsToAdd;
 
     // Constructor and Destructor
-    Manager(int _screenWidth, int _screenHeight, float _levelRadius, float _levelOffset, float _paddleBoundaryWidth, Texture2D _backgroundTexture, const char* _musicFile, const char* _osuFile = nullptr);
+    Manager(int _screenWidth, int _screenHeight, float _levelRadius, float _levelOffset, float _paddleBoundaryWidth, Texture2D _backgroundTexture, const char* _musicFile, const char* _osuFile = nullptr, const char* _videoFile = nullptr, bool _enableVideoSync = false);
     ~Manager();
 
     // Member functions for managing entities

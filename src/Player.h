@@ -6,14 +6,13 @@
 #include <memory>
 #include <vector>
 
-struct Manager; // Forward declaration of Manager
+struct Manager; 
 
 struct Keybinds {
     std::vector<int> LEFT;
     std::vector<int> RIGHT;
 };
 
-// TODO: add CheckCollisionPointPoly instead of using a rectangle for collision detection
 
 struct Player : Entity {
     Texture2D spriteSheet;   // Player sprite

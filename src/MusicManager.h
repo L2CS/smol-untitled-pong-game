@@ -44,6 +44,13 @@ public:
     {
         return visualizerTime - songStartTime;
     }
+    float getActualMusicTime() const
+    {
+        if (musicPlaying && soundsLoaded) {
+            return GetMusicTimePlayed(backgroundMusic);
+        }
+        return getCurrentSongTime();
+    }
     bool isGameEnded() const;
     const std::vector<float>& getMagnitudes() const
     {

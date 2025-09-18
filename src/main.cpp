@@ -10,8 +10,10 @@ int main(int argc, char* argv[])
     // Parse command line arguments
     const char* musicFile = "./backgorund.wav"; // Default music file
     const char* backgroundImage = "./bg.png";   // Default background (supports .png, .jpg, .bmp, etc.)
+    const char* videoFile = nullptr;            // Optional video background file (.mp4, .avi, etc.)
     const char* osuFile = nullptr;              // Optional osu! beatmap file
     bool enableAI = false;
+    bool enableVideoSync = false;               // Enable tight video-audio synchronization
     int aiDifficulty = 1; // 0=Easy, 1=Medium, 2=Hard
     int aiPlayer = 1;     // Which player to make AI (0 or 1)
 
@@ -44,11 +46,29 @@ int main(int argc, char* argv[])
                 }
             }
         }
+        else if (strcmp(argv[i], "--video") == 0 || strcmp(argv[i], "-v") == 0) {
+            if (i + 1 < argc) {
+                i++;
+                videoFile = argv[i];
+            }
+        }
+        else if (strcmp(argv[i], "--sync") == 0) {
+            enableVideoSync = true;
+        }
         else if (i == 1) {
             musicFile = argv[i];
         }
         else if (i == 2) {
-            backgroundImage = argv[i];
+            // Check if it's a video file based on extension
+            const char* ext = strrchr(argv[i], '.');
+            if (ext && (strcmp(ext, ".mp4") == 0 || strcmp(ext, ".avi") == 0 ||
+                        strcmp(ext, ".mov") == 0 || strcmp(ext, ".mkv") == 0 ||
+                        strcmp(ext, ".webm") == 0)) {
+                videoFile = argv[i];
+            }
+            else {
+                backgroundImage = argv[i];
+            }
         }
         else if (i == 3) {
             osuFile = argv[i];
@@ -56,22 +76,31 @@ int main(int argc, char* argv[])
     }
 
     if (argc == 1) {
-        printf("Usage: %s [music_file] [background_image] [osu_beatmap] [options]\n", argv[0]);
+        printf("Usage: %s [music_file] [background_image_or_video] [osu_beatmap] [options]\n", argv[0]);
         printf("Options:\n");
         printf("  --ai [easy|medium|hard]  Enable AI opponent (default: medium)\n");
         printf("  --ai-player [0|1]        Which player to make AI (default: 1)\n");
+        printf("  --video [video_file]     Use video background (overrides image)\n");
+        printf("  --sync                   Enable tight video-audio synchronization\n");
         printf("\nSupported formats:\n");
         printf("  Music: .wav files (for FFT analysis)\n");
-        printf("  Background: .png, .jpg, .jpeg, .bmp, .tga files\n");
+        printf("  Background Images: .png, .jpg, .jpeg, .bmp, .tga files\n");
+        printf("  Background Videos: .mp4, .avi, .mov, .mkv, .webm files (no audio)\n");
         printf("  Beatmap: .osu files (for score multiplier system)\n");
         printf("\nExamples:\n");
         printf("  %s song.wav bg.png map.osu --ai hard\n", argv[0]);
-        printf("  %s song.wav bg.png --ai easy --ai-player 0\n", argv[0]);
+        printf("  %s song.wav video.mp4 --ai easy --sync\n", argv[0]);
+        printf("  %s song.wav bg.png --video video.mp4 --sync\n", argv[0]);
     }
 
     printf("Configuration:\n");
     printf("  Music: %s\n", musicFile);
-    printf("  Background: %s\n", backgroundImage);
+    if (videoFile) {
+        printf("  Background: %s (video%s)\n", videoFile, enableVideoSync ? " with sync" : "");
+    }
+    else {
+        printf("  Background: %s (image)\n", backgroundImage);
+    }
     printf("  Beatmap: %s\n", osuFile ? osuFile : "None (default scoring)");
     if (enableAI) {
         const char* diffNames[] = { "Easy", "Medium", "Hard" };
@@ -103,39 +132,45 @@ int main(int argc, char* argv[])
     const char* playerSpriteLocation = "./resources/textures/paddle.png";
     Texture2D playerSprite = LoadTexture(playerSpriteLocation);
 
-    // Load background image with better error handling
-    printf("Attempting to load background image: %s\n", backgroundImage);
-
-    // First try to load as an Image to get more detailed error info
-    Image backgroundImg = LoadImage(backgroundImage);
+    // Load background image with better error handling (only if no video specified)
     Texture2D backgroundTexture = { 0 };
 
-    if (backgroundImg.data != NULL) {
-        printf("Image loaded successfully - Format: %d, Width: %d, Height: %d\n",
-               backgroundImg.format, backgroundImg.width, backgroundImg.height);
+    if (!videoFile) {
+        printf("Attempting to load background image: %s\n", backgroundImage);
 
-        // Convert to a supported format if needed
-        if (backgroundImg.format != PIXELFORMAT_UNCOMPRESSED_R8G8B8A8) {
-            printf("Converting image format...\n");
-            ImageFormat(&backgroundImg, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
-        }
+        // First try to load as an Image to get more detailed error info
+        Image backgroundImg = LoadImage(backgroundImage);
 
-        // Create texture from image
-        backgroundTexture = LoadTextureFromImage(backgroundImg);
-        UnloadImage(backgroundImg);
+        if (backgroundImg.data != NULL) {
+            printf("Image loaded successfully - Format: %d, Width: %d, Height: %d\n",
+                   backgroundImg.format, backgroundImg.width, backgroundImg.height);
 
-        if (backgroundTexture.id != 0) {
-            printf("Background texture created successfully: %s\n", backgroundImage);
+            // Convert to a supported format if needed
+            if (backgroundImg.format != PIXELFORMAT_UNCOMPRESSED_R8G8B8A8) {
+                printf("Converting image format...\n");
+                ImageFormat(&backgroundImg, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+            }
+
+            // Create texture from image
+            backgroundTexture = LoadTextureFromImage(backgroundImg);
+            UnloadImage(backgroundImg);
+
+            if (backgroundTexture.id != 0) {
+                printf("Background texture created successfully: %s\n", backgroundImage);
+            }
+            else {
+                printf("Failed to create texture from image\n");
+            }
         }
         else {
-            printf("Failed to create texture from image\n");
+            printf("Warning: Could not load background image: %s\n", backgroundImage);
+            printf("This may be due to unsupported JPG format or corrupted file\n");
+            printf("Try converting to PNG format for better compatibility\n");
+            printf("Using default background (black)\n");
         }
     }
     else {
-        printf("Warning: Could not load background image: %s\n", backgroundImage);
-        printf("This may be due to unsupported JPG format or corrupted file\n");
-        printf("Try converting to PNG format for better compatibility\n");
-        printf("Using default background (black)\n");
+        printf("Using video background, skipping image loading\n");
     }
 
     // TODO: Make into unique_ptr, stop passing around manager everywhere
@@ -147,19 +182,17 @@ int main(int argc, char* argv[])
         boundaryWidth,
         backgroundTexture,
         musicFile,
-        osuFile);
+        osuFile,
+        videoFile,
+        enableVideoSync);
 
-    // Start background music using miniaudio
     mgr->musicManager.startBackgroundMusic(musicFile);
 
-    // Set the song start time for visualizer sync
     mgr->setSongStartTime();
 
-    // Raylib audio is now ready
-    bool musicLoaded = true; // We're using Raylib audio
+    bool musicLoaded = true; 
 
     // TODO: Let the user set binds in the game menu :)
-    // Set up keybinds based on AI configuration
     Keybinds p1Binds, p2Binds;
 
     if (enableAI) {
@@ -197,8 +230,8 @@ int main(int argc, char* argv[])
         (Vector2){ 3.0f, 11.0f },
         (Vector2){ 32.0f, 32.0f },
         (Vector2){ (float)screenWidth / 2, (float)(screenHeight / 1.5) },
-        (Vector2){ 65.0f, 20.0f }, // Increased from 50x16 to 65x20
-        (Vector2){ 32.0f, 10.0f }, // Increased hitbox proportionally
+        (Vector2){ 65.0f, 20.0f },
+        (Vector2){ 32.0f, 10.0f },
         0.5f,
         0.05f,
         0.0001f,
@@ -211,9 +244,8 @@ int main(int argc, char* argv[])
         (Vector2){ 3.0f, 11.0f },
         (Vector2){ 32.0f, 32.0f },
         (Vector2){ (float)screenWidth / 2, (float)(screenHeight / 4) },
-        (Vector2){ 65.0f, 20.0f }, // Increased from 50x16 to 65x20
-        (Vector2){ 32.0f, 10.0f }, // Increased hitbox proportionally
-        0.5f,
+        (Vector2){ 65.0f, 20.0f }, 
+        (Vector2){ 32.0f, 10.0f },
         0.05f,
         0.0001f,
         9.8f,
@@ -225,7 +257,7 @@ int main(int argc, char* argv[])
         (Vector2){ 5.0, 5.0 },
         (Vector2){ 5.0, 5.0 },
         0.2f,
-        0.005f); // Much lighter gravity - subtle pull toward goal areas
+        0.005f);
 
     mgr->addEntity(p1);
     mgr->addEntity(p2);
@@ -234,13 +266,11 @@ int main(int argc, char* argv[])
     mgr->addPlayer(p1);
     mgr->addPlayer(p2);
 
-    // Enable AI if requested
     if (enableAI) {
         AIController::Difficulty difficulty = static_cast<AIController::Difficulty>(aiDifficulty);
         mgr->enableAI(aiPlayer, difficulty);
     }
 
-    // Define a target frame rate and calculate the frame time
     const int targetFPS = 60;
     const float targetFrameTime = 1.0f / targetFPS;
 
@@ -284,7 +314,6 @@ int main(int argc, char* argv[])
         EndDrawing();
     }
 
-    // Cleanup - miniaudio handles cleanup automatically
     CloseWindow();
 
     return 0;

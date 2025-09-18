@@ -3,7 +3,7 @@
 #include "raylib.h"
 #include <vector>
 
-class MusicManager; // Forward declaration
+class MusicManager;
 
 class Visualizer {
 public:

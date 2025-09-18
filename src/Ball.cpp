@@ -43,7 +43,6 @@ void ParticleSystem::draw()
 
 void ParticleSystem::emit(Vector2 position, Vector2 velocity, float intensity)
 {
-    // Don't exceed max particles
     if (particles.size() >= MAX_PARTICLES) return;
 
     // Create new particle
@@ -148,12 +147,12 @@ int Ball::hitGoal(Manager* _manager, Vector2 _position)
 
         if (CheckCollisionPointLine(_position, p1, p2, 2.0f)) {
             std::cout << "GOOOAALLLLLL!!!!! Player 2 scored!" << std::endl;
-            return 1; // Player 2 scored (return the scoring player)
+            return 1; // Player 2 scored 
         }
 
         if (CheckCollisionPointLine(_position, p3, p4, 2.0f)) {
             std::cout << "GOOOAALLLLLL!!!!! Player 1 scored!" << std::endl;
-            return 0; // Player 1 scored (return the scoring player)
+            return 0; // Player 1 scored
         }
     }
 
@@ -187,36 +186,30 @@ void Ball::update(Manager* _manager, int _screenWidth, int _screenHeight, float 
     }
 
     // Emit particles based on speed and beat intensity
-    float speedRatio = currentSpeed / maxVelocity;                 // How fast compared to base speed
-    float particleIntensity = (speedRatio - 1.0f) + beatIntensity; // Combine speed and beat
+    float speedRatio = currentSpeed / maxVelocity;
+    float particleIntensity = (speedRatio - 1.0f) + beatIntensity; 
 
-    if (particleIntensity > 0.2f) { // Only emit when moving fast or on beats
+    if (particleIntensity > 0.2f) { 
         particles.emit(position, currentVelocity, particleIntensity);
     }
 
-    // Very subtle center pull to prevent ball from getting stuck bouncing side to side
     Vector2 center = { (float)_screenWidth / 2, (float)_screenHeight / 2 };
 
-    // Define goal areas
     float topGoalY = _screenHeight / 2 - _manager->levelRadius + 15;
     float bottomGoalY = _screenHeight / 2 + _manager->levelRadius - 15;
 
     Vector2 pullForce = { 0, 0 };
 
-    // Always apply a very weak pull toward the closer goal area
     float distanceToTopGoal = fabsf(position.y - topGoalY);
     float distanceToBottomGoal = fabsf(position.y - bottomGoalY);
 
     if (distanceToTopGoal < distanceToBottomGoal) {
-        // Pull very gently toward top goal
         pullForce.y = -gravity * 0.02f * dt;
     }
     else {
-        // Pull very gently toward bottom goal
         pullForce.y = gravity * 0.02f * dt;
     }
 
-    // Stronger horizontal pull toward center to prevent side bouncing
     float horizontalDistance = fabsf(position.x - center.x);
     float maxDistance = _manager->levelRadius * 0.6f;
 

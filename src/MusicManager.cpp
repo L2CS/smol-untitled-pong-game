@@ -397,12 +397,11 @@ void MusicManager::onPaddleHit()
 {
     float currentTime = visualizerTime;
 
-    // Check if this is a consecutive paddle hit
-    if (lastHitWasPaddle && (currentTime - lastPaddleHitTime) <= CONSECUTIVE_HIT_TIMEOUT) {
-        // Consecutive paddle hit - play the same sound
-        printf("Consecutive paddle hit detected! Playing hit sound again.\n");
-        playHitSound();
-    }
+    // TODO: Check if this is a consecutive paddle hit play diffrent sound
+    // if (lastHitWasPaddle && (currentTime - lastPaddleHitTime) <= CONSECUTIVE_HIT_TIMEOUT) {
+    //     printf("Consecutive paddle hit detected! Playing hit sound again.\n");
+    //     playHitSound();
+    // }
     else {
         // First paddle hit or timeout exceeded - play normal hit sound
         printf("Paddle hit detected! Playing hit sound.\n");
@@ -416,6 +415,5 @@ void MusicManager::onPaddleHit()
 
 void MusicManager::onNonPaddleHit()
 {
-    // Reset paddle hit tracking when ball hits something else
     lastHitWasPaddle = false;
 }

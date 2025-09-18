@@ -15,10 +15,14 @@ add_subdirectory(thirdparty/raylib)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(FFTW3 REQUIRED fftw3)
 
+# Find FFmpeg for video support
+pkg_check_modules(FFMPEG REQUIRED libavformat libavcodec libavutil libswscale)
+
 include_directories(
     thirdparty
     thirdparty/raylib/src
     ${FFTW3_INCLUDE_DIRS}
+    ${FFMPEG_INCLUDE_DIRS}
     src
 )
 
@@ -33,12 +37,14 @@ target_include_directories(${PROJECT_NAME_LIB} PRIVATE
     thirdparty
     thirdparty/raylib/src
     ${FFTW3_INCLUDE_DIRS}
+    ${FFMPEG_INCLUDE_DIRS}
 )
 
 target_link_libraries(${PROJECT_NAME}
     ${PROJECT_NAME_LIB}
     raylib
     ${FFTW3_LIBRARIES}
+    ${FFMPEG_LIBRARIES}
     m  # Math library
 #    -static-libstdc  # Statically link libstdc++
 )

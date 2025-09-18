@@ -4,13 +4,13 @@
 #include <chrono>
 #include <iostream>
 
-Manager::Manager(int _screenWidth, int _screenHeight, float _levelRadius, float _levelOffset, float _paddleBoundaryWidth, Texture2D _backgroundTexture, const char* _musicFile, const char* _osuFile)
-    : musicManager(), visualizer(_screenWidth, _screenHeight, _levelRadius)
+Manager::Manager(int _screenWidth, int _screenHeight, float _levelRadius, float _levelOffset, float _paddleBoundaryWidth, Texture2D _backgroundTexture, const char* _musicFile, const char* _osuFile, const char* _videoFile, bool _enableVideoSync)
+    : musicManager(), visualizer(_screenWidth, _screenHeight, _levelRadius), videoManager()
 {
     screenWidth = _screenWidth;
     screenHeight = _screenHeight;
     levelRadius = _levelRadius;
-    baseLevelRadius = _levelRadius; // Store original radius
+    baseLevelRadius = _levelRadius;
     levelOffset = _levelOffset;
     paddleBoundaryWidth = _paddleBoundaryWidth;
 
@@ -21,9 +21,9 @@ Manager::Manager(int _screenWidth, int _screenHeight, float _levelRadius, float 
     numGoalPoints = 20;
 
     // Initialize scoring system
-    playerScores = { 0, 0 };               // Two players start with 0 score
-    playerMultipliers = { 1.0f, 1.0f };    // Start with 1x multiplier
-    lastHitTimes = { -1000.0f, -1000.0f }; // Initialize to very old times
+    playerScores = { 0, 0 };
+    playerMultipliers = { 1.0f, 1.0f };
+    lastHitTimes = { -1000.0f, -1000.0f }; 
 
     // Initialize hit feedback system
     consecutiveHits = { 0, 0 };
@@ -41,14 +41,26 @@ Manager::Manager(int _screenWidth, int _screenHeight, float _levelRadius, float 
     std::cout << start.x << "," << end.x << std::endl;
 
     backgroundTexture = _backgroundTexture;
+    useVideoBackground = false;
+    enableVideoSync = _enableVideoSync;
     gameEnded = false;
     winner = -1;
+
+    // Load video background if provided
+    if (_videoFile && videoManager.loadVideo(_videoFile)) {
+        useVideoBackground = true;
+        printf("Video background loaded: %s%s\n", _videoFile, enableVideoSync ? " (sync enabled)" : " (basic playback)");
+    }
+    else if (_videoFile) {
+        printf("Failed to load video background: %s\n", _videoFile);
+        printf("Falling back to image background\n");
+    }
 
     // Initialize music manager
     musicManager.initializeSounds();
     musicManager.loadAudioFile(_musicFile);
 
-    // Parse osu! beatmap if provided (after music manager is initialized)
+    // Parse osu! beatmap if provided
     if (_osuFile && osuParser.parseFile(_osuFile)) {
         hitObjectTimes = osuParser.getHitObjectTimes();
 
@@ -156,15 +168,58 @@ void Manager::update()
     // Update visualizer with audio data
     visualizer.update(musicManager);
 
+    // Update video background if using video
+    if (useVideoBackground) {
+        if (enableVideoSync) {
+            // Sync to actual music stream time for tight synchronization
+            float actualMusicTime = musicManager.getActualMusicTime();
+            videoManager.update(actualMusicTime);
+            
+            // Debug sync quality every 5 seconds
+            static float lastSyncCheck = 0.0f;
+            if (actualMusicTime - lastSyncCheck > 5.0f) {
+                float syncDiff = videoManager.getSyncDifference();
+                if (fabsf(syncDiff) > 0.1f) {
+                    printf("Video sync check: %.3fs difference at music time %.1fs\n", syncDiff, actualMusicTime);
+                }
+                lastSyncCheck = actualMusicTime;
+            }
+        } else {
+            // Basic video playback without tight sync (less CPU intensive)
+            videoManager.updateBasic(dt / 1000.0f);
+        }
+    }
+
     // Update multiplier system
     updateMultipliers();
 }
 
 void Manager::draw()
 {
-    // Draw background image if loaded
-    if (backgroundTexture.id != 0) {
-        // Scale background to fit screen
+    // Draw background (video or image)
+    if (useVideoBackground && videoManager.isLoaded()) {
+        // Draw video background
+        Texture2D videoFrame = videoManager.getCurrentFrame();
+        if (videoFrame.id != 0) {
+            // Scale video to fit screen
+            float scaleX = (float)screenWidth / videoFrame.width;
+            float scaleY = (float)screenHeight / videoFrame.height;
+            float scale = fmaxf(scaleX, scaleY); // Use larger scale to fill screen
+
+            Rectangle sourceRec = { 0, 0, (float)videoFrame.width, (float)videoFrame.height };
+            Rectangle destRec = {
+                (screenWidth - videoFrame.width * scale) / 2,
+                (screenHeight - videoFrame.height * scale) / 2,
+                videoFrame.width * scale,
+                videoFrame.height * scale
+            };
+
+            // Draw with slight transparency to not overpower the game
+            DrawTexturePro(videoFrame, sourceRec, destRec, (Vector2){ 0, 0 }, 0.0f, (Color){ 255, 255, 255, 180 });
+        }
+    }
+    else if (backgroundTexture.id != 0) {
+        // Draw image background
         float scaleX = (float)screenWidth / backgroundTexture.width;
         float scaleY = (float)screenHeight / backgroundTexture.height;
         float scale = fmaxf(scaleX, scaleY); // Use larger scale to fill screen
@@ -338,6 +393,11 @@ void Manager::triggerVisualizerBeat(float intensity)
 void Manager::setSongStartTime()
 {
     musicManager.setSongStartTime();
+
+    // Start video playback if using video background
+    if (useVideoBackground && videoManager.isLoaded()) {
+        videoManager.play();
+    }
 }
 
 float Manager::getCurrentBeatIntensity() const

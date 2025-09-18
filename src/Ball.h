@@ -5,9 +5,8 @@
 #include <memory>
 #include <vector>
 
-struct Manager; // Forward declaration of Manager
+struct Manager;
 
-// Simple particle structure
 struct Particle {
     Vector2 position;
     Vector2 velocity;
