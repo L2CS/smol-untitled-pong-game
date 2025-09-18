@@ -147,7 +147,7 @@ int Ball::hitGoal(Manager* _manager, Vector2 _position)
 
         if (CheckCollisionPointLine(_position, p1, p2, 2.0f)) {
             std::cout << "GOOOAALLLLLL!!!!! Player 2 scored!" << std::endl;
-            return 1; // Player 2 scored 
+            return 1; // Player 2 scored
         }
 
         if (CheckCollisionPointLine(_position, p3, p4, 2.0f)) {
@@ -187,9 +187,9 @@ void Ball::update(Manager* _manager, int _screenWidth, int _screenHeight, float 
 
     // Emit particles based on speed and beat intensity
     float speedRatio = currentSpeed / maxVelocity;
-    float particleIntensity = (speedRatio - 1.0f) + beatIntensity; 
+    float particleIntensity = (speedRatio - 1.0f) + beatIntensity;
 
-    if (particleIntensity > 0.2f) { 
+    if (particleIntensity > 0.2f) {
         particles.emit(position, currentVelocity, particleIntensity);
     }
 

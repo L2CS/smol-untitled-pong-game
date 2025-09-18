@@ -13,9 +13,9 @@ int main(int argc, char* argv[])
     const char* videoFile = nullptr;            // Optional video background file (.mp4, .avi, etc.)
     const char* osuFile = nullptr;              // Optional osu! beatmap file
     bool enableAI = false;
-    bool enableVideoSync = false;               // Enable tight video-audio synchronization
-    int aiDifficulty = 1; // 0=Easy, 1=Medium, 2=Hard
-    int aiPlayer = 1;     // Which player to make AI (0 or 1)
+    bool enableVideoSync = false; // Enable tight video-audio synchronization
+    int aiDifficulty = 1;         // 0=Easy, 1=Medium, 2=Hard
+    int aiPlayer = 1;             // Which player to make AI (0 or 1)
 
     // Parse arguments
     for (int i = 1; i < argc; i++) {
@@ -190,7 +190,7 @@ int main(int argc, char* argv[])
 
     mgr->setSongStartTime();
 
-    bool musicLoaded = true; 
+    bool musicLoaded = true;
 
     // TODO: Let the user set binds in the game menu :)
     Keybinds p1Binds, p2Binds;
@@ -244,7 +244,7 @@ int main(int argc, char* argv[])
         (Vector2){ 3.0f, 11.0f },
         (Vector2){ 32.0f, 32.0f },
         (Vector2){ (float)screenWidth / 2, (float)(screenHeight / 4) },
-        (Vector2){ 65.0f, 20.0f }, 
+        (Vector2){ 65.0f, 20.0f },
         (Vector2){ 32.0f, 10.0f },
         0.05f,
         0.0001f,

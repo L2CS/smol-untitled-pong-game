@@ -23,7 +23,7 @@ Manager::Manager(int _screenWidth, int _screenHeight, float _levelRadius, float 
     // Initialize scoring system
     playerScores = { 0, 0 };
     playerMultipliers = { 1.0f, 1.0f };
-    lastHitTimes = { -1000.0f, -1000.0f }; 
+    lastHitTimes = { -1000.0f, -1000.0f };
 
     // Initialize hit feedback system
     consecutiveHits = { 0, 0 };
@@ -174,7 +174,7 @@ void Manager::update()
             // Sync to actual music stream time for tight synchronization
             float actualMusicTime = musicManager.getActualMusicTime();
             videoManager.update(actualMusicTime);
-            
+
             // Debug sync quality every 5 seconds
             static float lastSyncCheck = 0.0f;
             if (actualMusicTime - lastSyncCheck > 5.0f) {
@@ -184,7 +184,8 @@ void Manager::update()
                 }
                 lastSyncCheck = actualMusicTime;
             }
-        } else {
+        }
+        else {
             // Basic video playback without tight sync (less CPU intensive)
             videoManager.updateBasic(dt / 1000.0f);
         }

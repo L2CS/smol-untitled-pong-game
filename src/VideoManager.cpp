@@ -15,7 +15,6 @@ VideoManager::~VideoManager()
     cleanup();
 }
 
-
 bool VideoManager::loadVideo(const std::string& filename)
 {
     cleanup();
@@ -175,14 +174,15 @@ void VideoManager::updateBasic(float deltaTime)
     if (!loaded || !playing) return;
 
     currentTime += deltaTime;
-    
+
     // Check if we need to decode the next frame based on frame rate
     float targetFrameTime = 1.0f / frameRate;
     if (currentTime - lastFrameTime >= targetFrameTime) {
         if (decodeNextFrame()) {
             convertFrameToTexture();
             lastFrameTime = currentTime;
-        } else {
+        }
+        else {
             // End of video - loop back to beginning
             restart();
         }
@@ -246,7 +246,7 @@ bool VideoManager::decodeFrameForTime(float targetTime)
     // Decode frames until we reach the target time
     while (decodeNextFrame()) {
         if (targetTime >= currentFrameTime && targetTime < nextFrameTime) {
-            return true; 
+            return true;
         }
         if (currentFrameTime > targetTime + 1.0) {
             // gg you are gone

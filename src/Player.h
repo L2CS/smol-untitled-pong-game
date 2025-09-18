@@ -6,13 +6,12 @@
 #include <memory>
 #include <vector>
 
-struct Manager; 
+struct Manager;
 
 struct Keybinds {
     std::vector<int> LEFT;
     std::vector<int> RIGHT;
 };
-
 
 struct Player : Entity {
     Texture2D spriteSheet;   // Player sprite

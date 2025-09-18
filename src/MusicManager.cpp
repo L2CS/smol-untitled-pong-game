@@ -402,7 +402,8 @@ void MusicManager::onPaddleHit()
     //     printf("Consecutive paddle hit detected! Playing hit sound again.\n");
     //     playHitSound();
     // }
-    else {
+    else
+    {
         // First paddle hit or timeout exceeded - play normal hit sound
         printf("Paddle hit detected! Playing hit sound.\n");
         playHitSound();

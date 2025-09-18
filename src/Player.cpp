@@ -22,7 +22,7 @@ Player::Player(Texture2D _spriteSheet, Vector2 _src, Vector2 _textureDims, Vecto
     src = _src;
     hp = _hp;
     binds = _binds;
-    angularVelocity = 0.0f; 
+    angularVelocity = 0.0f;
 
     // Initialize AI control
     aiController = nullptr;
@@ -96,7 +96,7 @@ void Player::update(Manager* _manager, int _screenWidth, int _screenHeight, floa
         currentMultiplier = _manager->playerMultipliers[playerIndex];
     }
 
-    float speedBonus = 1.0f + (currentMultiplier - 1.0f) * 0.25f; 
+    float speedBonus = 1.0f + (currentMultiplier - 1.0f) * 0.25f;
     float forceMultiplier = 10.0f * speedBonus;
     float directionMultiplier = (playerIndex == 0) ? 1.0f : -1.0f;
 
@@ -158,7 +158,7 @@ void Player::update(Manager* _manager, int _screenWidth, int _screenHeight, floa
     }
     else if (angleDiff < -maxHalfRange) {
         newAngle = centerAngle - maxHalfRange;
-        angularVelocity = 0; 
+        angularVelocity = 0;
     }
 
     // Calculate new position on the circle
