@@ -30,6 +30,14 @@ git submodule update --init
 ./build.sh
 ```
 
+```
+./build/pong audio-file background-image osu-file
+```
+
+```
+./build/pong "./data/yoru/audio.mp3" "./data/yoru/bg.png" "./data/yoru/YOASOBI - Yoru ni Kakeru (9ami) [2lewd's Insane].osu"
+```
+
 ### Windows - Visual Studio
 
 ```bat
