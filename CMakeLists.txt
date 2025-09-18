@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.5)
 project(pong)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -11,9 +11,18 @@ set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)
 # Add your libraries and include directories
 add_subdirectory(thirdparty/raylib)
 
+# Find FFTW3 installed via Homebrew
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(FFTW3 REQUIRED fftw3)
+
+# Find FFmpeg for video support
+pkg_check_modules(FFMPEG REQUIRED libavformat libavcodec libavutil libswscale)
+
 include_directories(
     thirdparty
     thirdparty/raylib/src
+    ${FFTW3_INCLUDE_DIRS}
+    ${FFMPEG_INCLUDE_DIRS}
     src
 )
 
@@ -27,11 +36,16 @@ add_executable(${PROJECT_NAME} src/main.cpp)
 target_include_directories(${PROJECT_NAME_LIB} PRIVATE
     thirdparty
     thirdparty/raylib/src
+    ${FFTW3_INCLUDE_DIRS}
+    ${FFMPEG_INCLUDE_DIRS}
 )
 
 target_link_libraries(${PROJECT_NAME}
     ${PROJECT_NAME_LIB}
     raylib
+    ${FFTW3_LIBRARIES}
+    ${FFMPEG_LIBRARIES}
+    m  # Math library
 #    -static-libstdc  # Statically link libstdc++
 )
 

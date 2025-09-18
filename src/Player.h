@@ -1,17 +1,17 @@
 #pragma once
 
+#include "AIController.h"
 #include "Entity.h"
 
+#include <memory>
 #include <vector>
 
-struct Manager; // Forward declaration of Manager
+struct Manager;
 
 struct Keybinds {
     std::vector<int> LEFT;
     std::vector<int> RIGHT;
 };
-
-// TODO: add CheckCollisionPointPoly instead of using a rectangle for collision detection
 
 struct Player : Entity {
     Texture2D spriteSheet;   // Player sprite
@@ -24,9 +24,19 @@ struct Player : Entity {
     Vector2 src;             // Coords of first image of spritesheet for player
     float hp;                // Health points
     Keybinds binds;          // Keybinds
+    float angularVelocity;   // Angular velocity for circular movement
+
+    // AI control
+    std::unique_ptr<AIController> aiController;
+    bool isAIControlled;
 
     Player(Texture2D _spriteSheet, Vector2 _src, Vector2 _textureDims, Vector2 _position, Vector2 _outputDims, Vector2 _hitboxDims, float _maxVelocity, float _force, float _frictionCoeff, float _normal, float _hp, Keybinds _binds);
-    bool outOfBounds(Manager* _manager, Vector2 _position);
-    void update(Manager* _manager, int _screenWidth, int _screenHeight, float dt);
+    bool outOfBounds(Manager* _manager, Vector2 _position, int playerIndex);
+    void update(Manager* _manager, int _screenWidth, int _screenHeight, float dt, int playerIndex);
     void draw();
+
+    // AI control methods
+    void enableAI(AIController::Difficulty difficulty = AIController::MEDIUM);
+    void disableAI();
+    void setAIDifficulty(AIController::Difficulty difficulty);
 };

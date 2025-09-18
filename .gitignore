@@ -31,7 +31,7 @@ CMakeCache.txt
 # Fortran module files
 *.mod
 *.smod
-
+.cache/
 # Compiled Static libraries
 *.lai
 *.la

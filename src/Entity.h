@@ -15,7 +15,7 @@ enum EntityType {
 
 using EntityId = unsigned int;
 
-struct Entity {
+struct Entity : public std::enable_shared_from_this<Entity> {
     static EntityId newId;
     EntityId id;
     Vector2 outputDims;
@@ -26,8 +26,8 @@ struct Entity {
     bool destroyed;
 
     Entity(Vector2 _position, Vector2 _outputDims, Vector2 _hitboxDims, EntityType _type);
-    void update();
-    void draw();
+    virtual void update();
+    virtual void draw();
 };
 
 using EntityMap = std::unordered_map<EntityId, std::shared_ptr<Entity>>;
