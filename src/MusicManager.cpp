@@ -19,11 +19,13 @@ MusicManager::MusicManager()
     , currentBeatIntensity(0.0f)
     , lastBeatTime(0.0f)
     , soundsLoaded(false)
+    , musicPlaying(false)
     , lastHitWasPaddle(false)
     , lastPaddleHitTime(0.0f)
     , fftw_input(nullptr)
     , fftw_output(nullptr)
     , fftw_plan_forward(nullptr)
+
 {
     // Initialize FFTW3 buffers and plan
     audioBuffer.resize(FFT_SIZE, 0.0f);
@@ -40,6 +42,17 @@ MusicManager::~MusicManager()
 
 void MusicManager::cleanup()
 {
+    // Clean up Raylib audio resources
+    if (soundsLoaded) {
+        if (musicPlaying) {
+            StopMusicStream(backgroundMusic);
+            UnloadMusicStream(backgroundMusic);
+        }
+        UnloadSound(hitSound);
+        soundsLoaded = false;
+        musicPlaying = false;
+    }
+    
     // Clean up FFTW3 resources
     if (fftw_plan_forward) {
         fftw_destroy_plan(fftw_plan_forward);
@@ -54,32 +67,29 @@ void MusicManager::cleanup()
         fftw_output = nullptr;
     }
     fftw_cleanup();
-    
-    // No Raylib sounds to unload since we're using afplay
-    soundsLoaded = false;
 }
 
 bool MusicManager::initializeSounds()
 {
-    // Initialize Raylib audio device for FFT analysis (but use afplay for playback)
+    // Initialize Raylib audio device
     if (!IsAudioDeviceReady()) {
-        printf("Initializing Raylib audio device for FFT analysis...\n");
+        printf("Initializing Raylib audio device...\n");
         InitAudioDevice();
     }
     
-    printf("Using afplay for sound playback (macOS system audio)\n");
+    printf("Using Raylib audio for sound playback\n");
     
-    // Check if the hit sound file exists
-    FILE* file = fopen("resources/audio/hit1.wav", "r");
-    if (file) {
-        fclose(file);
-        soundsLoaded = true;
-        printf("Hit sound file found: resources/audio/hit1.wav\n");
-        return true;
+    // Load hit sound
+    hitSound = LoadSound("resources/audio/hit1.wav");
+    if (hitSound.frameCount == 0) {
+        printf("Failed to load hit sound: resources/audio/hit1.wav\n");
+        printf("Hit sound will be disabled\n");
     } else {
-        printf("Hit sound file not found: resources/audio/hit1.wav\n");
-        return false;
+        printf("Hit sound loaded successfully: resources/audio/hit1.wav\n");
     }
+    
+    soundsLoaded = true;
+    return true;
 }
 
 bool MusicManager::loadAudioFile(const char* filename)
@@ -140,6 +150,11 @@ void MusicManager::setSongStartTime()
 void MusicManager::update(float deltaTime)
 {
     visualizerTime += deltaTime;
+    
+    // Update music stream if playing
+    if (musicPlaying && soundsLoaded) {
+        UpdateMusicStream(backgroundMusic);
+    }
     
     // Get real audio data from the loaded file
     getRealAudioData();
@@ -354,20 +369,40 @@ void MusicManager::loadBeatMapFromOsu(const std::vector<TimingPoint>& timingPoin
 
 bool MusicManager::isGameEnded() const
 {
+    // Check if music has finished playing
+    if (musicPlaying && soundsLoaded) {
+        return !IsMusicStreamPlaying(backgroundMusic);
+    }
+    
+    // Fallback to time-based check
     float currentSongTime = visualizerTime - songStartTime;
     return currentSongTime >= musicDuration;
 }
 
+void MusicManager::startBackgroundMusic(const char* filename)
+{
+    if (!soundsLoaded) return;
+    
+    // Load and start background music
+    backgroundMusic = LoadMusicStream(filename);
+    if (backgroundMusic.frameCount == 0) {
+        printf("Failed to load background music: %s\n", filename);
+        return;
+    }
+    
+    // Set volume to 30% for comfortable listening
+    SetMusicVolume(backgroundMusic, 0.3f);
+    
+    // Start playing
+    PlayMusicStream(backgroundMusic);
+    musicPlaying = true;
+    printf("Background music started: %s at 30%% volume using Raylib\n", filename);
+}
+
 void MusicManager::playHitSound()
 {
-    if (soundsLoaded) {
-        // Use afplay for consistency with background music (macOS compatibility)
-        printf("Playing hit sound using afplay...\n");
-        // Kill any existing hit sound to prevent overlapping
-        system("pkill -f 'afplay resources/audio/hit1.wav' 2>/dev/null");
-        system("afplay resources/audio/hit1.wav &");
-    } else {
-        printf("Cannot play hit sound - sound file not loaded\n");
+    if (soundsLoaded && hitSound.frameCount > 0) {
+        PlaySound(hitSound);
     }
 }
 

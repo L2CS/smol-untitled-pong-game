@@ -89,8 +89,7 @@ int main(int argc, char* argv[])
     
     printf("Screen dimensions: %dx%d, Level radius: %.1f\n", screenWidth, screenHeight, levelRadius);
     
-    // Raylib audio has issues on this macOS system, use system audio instead
-    printf("Using system audio player (afplay) for macOS compatibility...\n");
+    printf("Using Raylib audio system for cross-platform compatibility...\n");
     
     // Load texture, sounds, etc.
     const char* playerSpriteLocation = "./resources/textures/paddle.png";
@@ -140,17 +139,14 @@ int main(int argc, char* argv[])
         musicFile,
         osuFile);
 
-    // Start background music using macOS system command with reduced volume
-    char musicCommand[512];
-    snprintf(musicCommand, sizeof(musicCommand), "afplay -v 0.3 \"%s\" &", musicFile);
-    system(musicCommand);
-    printf("Background music started: %s at 30% volume.\n", musicFile);
+    // Start background music using miniaudio
+    mgr->musicManager.startBackgroundMusic(musicFile);
     
     // Set the song start time for visualizer sync
     mgr->setSongStartTime();
     
-    // System audio is now playing in background
-    bool musicLoaded = true; // We're using system audio
+    // Raylib audio is now ready
+    bool musicLoaded = true; // We're using Raylib audio
     
     // TODO: Let the user set binds in the game menu :)
     // Set up keybinds based on AI configuration
@@ -277,8 +273,7 @@ int main(int argc, char* argv[])
         EndDrawing();
     }
 
-    // Cleanup - stop system audio
-    system("killall afplay"); // Stop any running afplay processes
+    // Cleanup - miniaudio handles cleanup automatically
     CloseWindow();
 
     return 0;

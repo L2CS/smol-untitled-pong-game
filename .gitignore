@@ -5,7 +5,6 @@
 /build
 /install
 /temp
-/data
 
 # CMake
 /cmake-build-debug

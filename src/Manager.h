@@ -52,6 +52,7 @@ struct Manager {
     std::vector<std::string> hitFeedbackText; // Current feedback text per player
     std::vector<Color> hitFeedbackColor; // Feedback text color per player
     
+public:
     // Modular components
     MusicManager musicManager;
     Visualizer visualizer;

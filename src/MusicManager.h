@@ -5,6 +5,8 @@
 #include <vector>
 #include <string>
 
+
+
 // Forward declaration to avoid circular dependency
 struct TimingPoint;
 
@@ -23,6 +25,7 @@ public:
     void setSongStartTime();
     void update(float deltaTime);
     void loadBeatMapFromOsu(const std::vector<struct TimingPoint>& timingPoints);
+    void startBackgroundMusic(const char* filename);
     
     // Sound effects
     bool initializeSounds();
@@ -74,7 +77,11 @@ private:
     float currentBeatIntensity;
     float lastBeatTime;
     
+    // Sound effects (using Raylib audio)
     bool soundsLoaded;
+    Music backgroundMusic;
+    Sound hitSound;
+    bool musicPlaying;
     
     // Hit tracking for consecutive hits
     bool lastHitWasPaddle;
